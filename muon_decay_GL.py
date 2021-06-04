@@ -19,17 +19,20 @@ for i in [0]:
     l_min     = 4                 # Largeur minimale d'integration
     l_max     = 16                # Largeur maximale d'integration
     l_box     = l_max             # Largeur d'integration initiale
-    y_integre = np.zeros(y.size)  # y integre
+    y_integre_1 = np.zeros(y.size)  # y integre
+    y_integre_2 = np.zeros(y.size)  # y integre
     box_std_p = 0                 # Initialisation de l'ecart-type d'intervalle
     bkg_std = np.concatenate((y[0:200][y[0:200].argsort()[:-l_min//2:-1]], y[0:200][y[0:200].argsort()[:l_min//2]])).std()
     # Ecart-type seuil du bruit de fond
 
     ### Integration par intervalle ajustable
-    for j in range(y_integre.size):
+    for j in range(y.size):
 
         ## Valeur initiale
         y_integre_j  = y[j:j+l_box].mean()
         box_std      = y[j:j+l_box].std()
+
+        y_integre_1[j]  = y[j:j+6].mean()
 
         ## Ajustement de l'intervalle d'integration
         if (box_std > box_std_p) and (box_std > bkg_std) and (l_box > l_min):
@@ -38,14 +41,16 @@ for i in [0]:
             l_box += 1
         
         ## Valeur ajustee
-        y_integre[j] = y[j:j+l_box].mean()
+        y_integre_2[j] = y[j:j+l_box].mean()
         box_std_p    = y[j:j+l_box].std()
 
     ## Figure
-    plt.figure() 
-    plt.plot(y)
-    plt.plot(y_integre +0.25)
+    plt.figure(figsize=(10,10)) 
+    plt.plot(y, label="donnees")
+    plt.plot(y_integre_1 +0.25,label="constant avec 6")
+    plt.plot(y_integre_2 +0.5, label="variable")
     plt.xlim(200,600)
+    plt.legend()
 
     plt.show()
 
