@@ -20,7 +20,7 @@ for i in [0]:
     l_max     = 16                # Largeur maximale d'integration
     l_box     = l_max             # Largeur d'integration initiale
     y_integre_1 = np.zeros(y.size)  # y integre
-    y_integre_2 = np.zeros(y.size)  # y integre
+    y_integre_2 = np.zeros(y.size)  # y integre variable
     box_std_p = 0                 # Initialisation de l'ecart-type d'intervalle
     bkg_std = np.concatenate((y[0:200][y[0:200].argsort()[:-l_min//2:-1]], y[0:200][y[0:200].argsort()[:l_min//2]])).std()
     # Ecart-type seuil du bruit de fond
