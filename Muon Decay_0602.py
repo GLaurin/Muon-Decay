@@ -10,7 +10,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 #%%
-N_data = 7
+
 for i in [0]:
     data = np.loadtxt("C:\\Users\\lauri\\Documents\\Sessions et Stages\\2021-2É\\Muon Decay\\acq_test\\te465.txt")
     x = data[:,0]
