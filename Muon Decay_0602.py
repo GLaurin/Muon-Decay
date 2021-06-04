@@ -12,23 +12,40 @@ from matplotlib import pyplot as plt
 #%%
 N_data = 7
 for i in [0]:
-    data = np.loadtxt("C:\\Users\\lauri\\Documents\\Sessions et Stages\\2021-2É\\Muon Decay_rep\\acq_test\\te465.txt")
+    data = np.loadtxt("C:\\Users\\lauri\\Documents\\Sessions et Stages\\2021-2É\\Muon Decay\\acq_test\\te465.txt")
     x = data[:,0]
     y = data[:,1]
 
-    l_integre = 15          # Largeur d'intégration
-    y_integre = np.zeros(y.size-l_integre)  # Y intégré
+    l_min     = 4                 # Largeur minimale d'integration
+    l_max     = 16                # Largeur maximale d'integration
+    l_box     = l_max             # Largeur d'integration initiale
+    y_integre = np.zeros(y.size)  # y integre
+    box_std_p = 0                 # Initialisation de l'ecart-type d'intervalle
+    bkg_std = np.concatenate((y[0:200][y[0:200].argsort()[:-l_min//2:-1]], y[0:200][y[0:200].argsort()[:l_min//2]])).std()
+    # Ecart-type seuil du bruit de fond
 
+    ### Integration par intervalle ajustable
     for j in range(y_integre.size):
-        y_integre[j] = y[j:j+l_integre].mean()
-    
-    d_diff    = 15           # distance des blocs 
-    y_final   = np.zeros(y.size-l_integre-d_diff)
-    for k in range(y_final.size):
-        y_final[k] = y_integre[k+d_diff]-y_integre[k]
-    break
 
-plt.plot(y)
-#plt.plot(y_integre)
-plt.plot(y_final)
-plt.xlim(200,600)
+        ## Valeur initiale
+        y_integre_j  = y[j:j+l_box].mean()
+        box_std      = y[j:j+l_box].std()
+
+        ## Ajustement de l'intervalle d'integration
+        if (box_std > box_std_p) and (box_std > bkg_std) and (l_box > l_min):
+            l_box -= 1
+        elif (box_std < box_std_p) and (l_box < l_max):
+            l_box += 1
+        
+        ## Valeur ajustee
+        y_integre[j] = y[j:j+l_box].mean()
+        box_std_p    = y[j:j+l_box].std()
+
+    ## Figure
+    plt.figure() 
+    plt.plot(y)
+    plt.plot(y_integre +0.25)
+    plt.xlim(200,600)
+
+    plt.show()
+
