@@ -8,9 +8,11 @@ Spark chamber collaboration
 
 import numpy as np
 from matplotlib import pyplot as plt
+from scipy.signal import find_peaks
 
-#%%
+#%% Analyse
 
+seuil = 0.005
 for i in [0]:
     data = np.loadtxt("C:\\Users\\lauri\\Documents\\Sessions et Stages\\2021-2É\\Muon Decay\\acq_test\\te465.txt")
     x = data[:,0]
@@ -51,6 +53,8 @@ for i in [0]:
         box_std_p      = y[j:j+l_box].std()
         box_arr[j]     = l_box
 
+    peaks,_ = find_peaks(-y_integre_2, height=seuil)
+
     ## Figure
     fig,ax = plt.subplots(figsize=(10,8))
     ax.plot(y,'k.', label="0")
@@ -58,6 +62,8 @@ for i in [0]:
     ax.plot(y_integre_2, c='r', label="variable")
     ax.legend(title="intervale d'integration")
     ax.set_xlim(200,600)
+    for i in range(peaks.size):
+        ax.axvline(peaks[i],c='k',ls=':',alpha=0.8)
     
     ## Zoom manuel sur le pic
     axin = ax.inset_axes([0.31,0.27,0.6,0.5])
@@ -67,5 +73,9 @@ for i in [0]:
     axin.set_xlim(500,580)
     axin.set_ylim(-0.04,0.01)
     ax.indicate_inset_zoom(axin, edgecolor="black")
+    for i in range(peaks.size):
+        axin.axvline(peaks[i],c='k',ls=':',alpha=0.8)
 
     plt.show()
+
+# %%
