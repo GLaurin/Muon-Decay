@@ -2,7 +2,7 @@
 """
 Muon Decay
 
-Spark chamber collaboration
+Sparks chamber collaboration
 """
 
 #%%
@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 from scipy.signal import find_peaks
 #%%
 
-def IntegrateData_FindPeaks(x,y, l_min=4, l_max=12, c_box=6, seuil=0.005, figshow=False, saveID="C:\\Users\\sasch\\Desktop\\Stage été 2021\\data_muons_0602\\Deux pics\\Test de filtre "):
+def IntegrateData_FindPeaks(x,y, l_min=4, l_max=12, c_box=6, seuil=0.0027, figshow=True, saveID="C:\\Users\\sasch\\Desktop\\Stage été 2021\\codes\\Muon-Decay\\Desintegrations\\Test avec nouvelle echelle 0806\\Test ", file_id=1, file_prefixe = "aq"):
     """
     Integration des donnees par intervale variant entre l_min et l_max
     Integration des donnees par intervale fixe de grandeur c_box
@@ -20,7 +20,10 @@ def IntegrateData_FindPeaks(x,y, l_min=4, l_max=12, c_box=6, seuil=0.005, figsho
     Enregistrement de la figure si saveID est donne
     Affichage de la figure si figshow est True
     """
-
+    #
+    bkg_mean = np.mean(y[0:200])
+    
+    
     l_box       = l_max                     # Largeur d'integration initiale
     y_integre_1 = np.zeros(y.size)          # y integre
     y_integre_2 = np.zeros(y.size)          # y integre variable
@@ -53,22 +56,26 @@ def IntegrateData_FindPeaks(x,y, l_min=4, l_max=12, c_box=6, seuil=0.005, figsho
         box_std_p      = y[j:j+l_box].std()
         box_arr[j]     = l_box
 
-    peaks,_ = find_peaks(-y_integre_2, height=seuil)
+    peaks,_ = find_peaks(-y_integre_1, height=seuil-bkg_mean)
+    if peaks.size ==2:      #Ici, j'essaie de dire au programme, s'il y a deux maxs qui dépassent le seuil, enregistre le fichier dans un dossier à part, mais ça ne fonctionne pas
+        plt.savefig("C:\\Users\\sasch\\Desktop\\Stage été 2021\\codes\\Muon-Decay\\Desintegrations\\Acquisitions avec desintegrations\\"+file_prefixe+str(file_id))
     if peaks.size>2: 
-        print("Plus de 2 minima locaux identifiees. \nVerifiez le seuil.")
+        print("Plus de 2 minima locaux identifiees. \nVerifiez le seuil.")  #Aussi, ça me dit tout le temps ça, mais quand je regarde les seuils, il y a aucune figure où il y a 3 pics...
 
     ## Figure
     if saveID or figshow:
         fig,ax = plt.subplots(figsize=(10,8))
         ax.plot(y,'k.', label="0")
         ax.plot(y_integre_1, c='b', label=c_box)
-        ax.plot(y_integre_2, c='r', label="variable")
+        #ax.plot(y_integre_2, c='r', label="variable")
         ax.legend(title="intervale d'integration",loc=3,framealpha=1)
-        ax.set_xlim(200,600)
+        ax.set_xlim(200,1000)
+        ax.axhline(bkg_mean, c='r')
+        ax.axhline(bkg_mean-seuil, c='r')
         for i in range(peaks.size):
             ax.axvline(peaks[i],c='k',ls=':',alpha=0.8)
         
-        if peaks.size==2:
+        if peaks.size==10:
             ## Zoom manuel sur le pic
             axin = ax.inset_axes([0.35,0.08,0.6,0.5])
             axin.plot(y,'k.')
@@ -84,7 +91,8 @@ def IntegrateData_FindPeaks(x,y, l_min=4, l_max=12, c_box=6, seuil=0.005, figsho
 
         if saveID:
             plt.savefig(saveID+str(f+1))
-            plt.close()
+            
+        
         
         if figshow:
             plt.show()
@@ -92,8 +100,26 @@ def IntegrateData_FindPeaks(x,y, l_min=4, l_max=12, c_box=6, seuil=0.005, figsho
     return y_integre_1, y_integre_2, peaks, box_arr
 #%%
 #Analyse
-for f in range (10):
-    data = np.loadtxt("C:\\Users\\sasch\\Desktop\\Stage été 2021\\data_muons_0602\\Deux pics\\testdefiltre_"+str(f+1)+".txt")
+file_prefixe = "aq"    
+file_ext     = ".txt"
+folder       = "C:\\Users\\sasch\\Desktop\\Stage été 2021\\codes\\Muon-Decay\\acq_nouv_echelle_0806\\"
+for f in range (2,9):
+    file_id = str(f)
+    if len(file_id)<6: 
+        file_id = (6-len(file_id))*"0"+file_id
+        file_path = folder + file_prefixe + file_id + file_ext
+    data = np.loadtxt(file_path)
+    
+    #Paramètres
     x = data[:,0]
     y = data[:,1]
-    y_var, y_con, ip, box = IntegrateData_FindPeaks(x,y)
+    l_min = 4
+    l_max = 12
+    c_box = 6
+    seuil = 0.0025
+    figshow = True
+    saveID = "C:\\Users\\sasch\\Desktop\\Stage été 2021\\codes\\Muon-Decay\\Desintegrations\\Test avec nouvelle echelle 0806\\Test "
+    
+    #Appel à la fonction
+    y_var, y_con, ip, box = IntegrateData_FindPeaks(x,y, l_min, l_max, c_box, seuil, figshow, saveID, file_id)
+    
