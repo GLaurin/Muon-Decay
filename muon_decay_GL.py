@@ -1,7 +1,6 @@
 """
-Muon Decay
-
-Spark chamber collaboration
+Analyse de la desintgration des muons
+Été 2021
 """
 
 #%%
@@ -13,7 +12,8 @@ from scipy.signal import find_peaks
 
 #%%
 
-def IntegrateData_FindPeaks(y, c_box=6, seuil_abs=0.005, figshow=True, saveID=None):
+def IntegrateData_FindPeaks(y, c_box=6, seuil_abs=0.005, figshow=False, saveID=None, figsave=True):
+    
     """
     Integration des donnees par intervale fixe de grandeur c_box
     Identification des pics inferieurs au seuil
@@ -31,7 +31,7 @@ def IntegrateData_FindPeaks(y, c_box=6, seuil_abs=0.005, figshow=True, saveID=No
 
     ## Identification des pics
     peaks,_ = find_peaks(-y_integre, height=seuil)
-    ip = 0 
+    ip = 0  
     while ip<peaks.size-1:
         dp = peaks[ip+1]-peaks[ip]
         if dp<3:
@@ -39,16 +39,16 @@ def IntegrateData_FindPeaks(y, c_box=6, seuil_abs=0.005, figshow=True, saveID=No
         else: ip += 1        
 
     ## Figure
-    if saveID or figshow:
+    if figsave or figshow:
         fig,ax = plt.subplots(figsize=(10,8))
         ax.plot(y,'k.', label="Donnees brutes")
         ax.plot(y_integre, c='b', label="Integrees sur "+str(c_box))
-        ax.set_xlim(200,600)
+        #ax.set_xlim(200,600)
         ax.axhline(-seuil,c='r',label="Seuil")
         for i in range(peaks.size):
             ax.axvline(peaks[i],c='k',ls=':',alpha=0.8)
         ax.legend(framealpha=1, loc=3)
-        
+
         ## Zoom sur le deuxieme pic
         if peaks.size==2:
             axin = ax.inset_axes([0.35,0.08,0.6,0.5])
@@ -61,8 +61,9 @@ def IntegrateData_FindPeaks(y, c_box=6, seuil_abs=0.005, figshow=True, saveID=No
             axin.axhline(-seuil,c='r')
             axin.text(peaks[-1]+40,-seuil*1.1,"seuil",va="top",color='r')
 
-        if saveID:
+        if peaks.size>1 and figsave:
             plt.savefig(saveID)
+
         if figshow:
             plt.show()
         else:
@@ -70,15 +71,12 @@ def IntegrateData_FindPeaks(y, c_box=6, seuil_abs=0.005, figshow=True, saveID=No
 
     return y_integre, peaks
 
-
 #%% Analyse
-
-re = "te465.txt"
 
 #Analyse
 file_prefixe = "aq"    
 file_ext     = ".txt"
-folder       = "C:\\Users\\lauri\\Documents\\Sessions et Stages\\2021-2É\\Muon Decay\\acq_nouv_echelle_0806\\"
+folder       = "C:\\Users\\sasch\\Desktop\\Stage été 2021\\codes\\Muon-Decay\\acq_nouv_echelle_0806\\"
 N_data       = len(os.listdir(folder))-1
 
 for i in range(N_data):
@@ -87,13 +85,15 @@ for i in range(N_data):
         file_id = (6-len(file_id))*"0"+file_id
         file_path = folder + file_prefixe + file_id + file_ext
     data = np.loadtxt(file_path)
-    
+
     #Parametres
     x = data[:,0]
     y = data[:,1]
-    c_box   = 6
-    seuil   = 0.002
-    fs      = 0
+    c_box   = 4
+    seuil   = 0.00255
+    fshow   = False
+    fsave   = True
     sid     = folder+"figures\\fig"+file_id+"_box"+str(c_box)+"_seuil"+str(seuil)[2:]+"_"
-    
-    y_integre, ip = IntegrateData_FindPeaks(y, c_box, seuil_abs=seuil, figshow=fs, saveID=sid)
+
+
+    y_integre, ip = IntegrateData_FindPeaks(y, c_box, figsave=fsave, seuil_abs=seuil, figshow=fshow, saveID=sid)
