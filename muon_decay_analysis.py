@@ -9,8 +9,12 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.signal import find_peaks
+from scipy.optimize import curve_fit
 
-#%%
+#%% Fonctions
+
+def MuonCount(t,N0,lambd):
+    return N0*np.exp(-lambd*t)
 
 def IntegrateData_FindPeaks(y, c_box=6, seuil_abs=0.005, figshow=False, saveID=None, figsave=True):
     
@@ -43,7 +47,7 @@ def IntegrateData_FindPeaks(y, c_box=6, seuil_abs=0.005, figshow=False, saveID=N
         fig,ax = plt.subplots(figsize=(10,8))
         ax.plot(y,'k.', label="Donnees brutes")
         ax.plot(y_integre, c='b', label="Integrees sur "+str(c_box))
-        #ax.set_xlim(200,600)
+        ax.set_xlim(0,2500)
         ax.axhline(-seuil,c='r',label="Seuil")
         for i in range(peaks.size):
             ax.axvline(peaks[i],c='k',ls=':',alpha=0.8)
@@ -59,11 +63,9 @@ def IntegrateData_FindPeaks(y, c_box=6, seuil_abs=0.005, figshow=False, saveID=N
             for i in range(peaks.size):
                 axin.axvline(peaks[i],c='k',ls=':',alpha=0.8)
             axin.axhline(-seuil,c='r')
-            axin.text(peaks[-1]+40,-seuil*1.1,"seuil",va="top",color='r')
 
         if peaks.size>1 and figsave:
             plt.savefig(saveID)
-
         if figshow:
             plt.show()
         else:
@@ -73,11 +75,14 @@ def IntegrateData_FindPeaks(y, c_box=6, seuil_abs=0.005, figshow=False, saveID=N
 
 #%% Analyse
 
-#Analyse
-file_prefixe = "aq"    
+## Parametres pour la lecture des fichiers
+    # Le folder ne devrait contenir que les donnees et un dossier "figures"
+file_prefixe = "aq"
 file_ext     = ".txt"
-folder       = "C:\\Users\\sasch\\Desktop\\Stage été 2021\\codes\\Muon-Decay\\acq_nouv_echelle_0806\\"
+folder       = "C:\\Users\\lauri\\Documents\\Sessions et Stages\\2021-2É\\Muon decay\\acq_nouv_echelle_0806\\"
 N_data       = len(os.listdir(folder))-1
+
+t_decay = np.zeros(0)   # Temps de desintegration des evenements identifies
 
 for i in range(N_data):
     file_id = str(i+2)
@@ -89,11 +94,19 @@ for i in range(N_data):
     #Parametres
     x = data[:,0]
     y = data[:,1]
-    c_box   = 4
-    seuil   = 0.00255
+    c_box   = 6
+    seuil   = 0.002
     fshow   = False
     fsave   = True
     sid     = folder+"figures\\fig"+file_id+"_box"+str(c_box)+"_seuil"+str(seuil)[2:]+"_"
 
-
     y_integre, ip = IntegrateData_FindPeaks(y, c_box, figsave=fsave, seuil_abs=seuil, figshow=fshow, saveID=sid)
+    if ip.size==2:
+        t_decay = np.append(t_decay,x[ip[1]]-x[ip[0]])
+
+## Compte de desintegration selon le temps
+N, bins = np.histogram(t_decay, bins='auto')
+t       = bins[:-1]+ 0.5*(bins[1:] - bins[:-1])
+plt.plot(t, N, 'or', alpha=1)
+
+#popt, pcov = curve_fit(MuonCount,N,t)
