@@ -35,6 +35,7 @@ def IntegrateData_FindPeaks(y, c_box=6, seuil_abs=0.005, figshow=False, saveID=N
 
     ## Identification des pics
     peaks,_ = find_peaks(-y_integre, height=seuil)
+    peaks   = np.delete(peaks,np.where(peaks<240)[0])
     ip = 0  
     while ip<peaks.size-1:
         dp = peaks[ip+1]-peaks[ip]
