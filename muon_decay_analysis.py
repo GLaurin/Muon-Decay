@@ -10,6 +10,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.signal import find_peaks
 from scipy.optimize import curve_fit
+from scipy import fft
 
 #%% Fonctions
 
@@ -35,6 +36,7 @@ def IntegrateData_FindPeaks(y, c_box=6, seuil_abs=0.005, figshow=False, saveID=N
 
     ## Identification des pics
     peaks,_ = find_peaks(-y_integre, height=seuil)
+    peaks   = np.delete(peaks,np.where(peaks<240)[0])
     ip = 0  
     while ip<peaks.size-1:
         dp = peaks[ip+1]-peaks[ip]
@@ -58,7 +60,7 @@ def IntegrateData_FindPeaks(y, c_box=6, seuil_abs=0.005, figshow=False, saveID=N
             axin = ax.inset_axes([0.35,0.08,0.6,0.5])
             axin.plot(y,'k.')
             axin.plot(y_integre, c='b')
-            axin.set_xlim(peaks[-1]-50,peaks[-1]+50)
+            axin.set_xlim(240,peaks[-1]+50)
             ax.indicate_inset_zoom(axin, edgecolor="black")
             for i in range(peaks.size):
                 axin.axvline(peaks[i],c='k',ls=':',alpha=0.8)
@@ -94,11 +96,11 @@ for i in range(N_data):
     #Parametres
     x = data[:,0]
     y = data[:,1]
-    c_box   = 6
-    seuil   = 0.002
-    fshow   = False
-    fsave   = True
-    sid     = folder+"figures\\fig"+file_id+"_box"+str(c_box)+"_seuil"+str(seuil)[2:]+"_"
+    c_box   = 3
+    seuil   = 0.00247
+    fshow   = 0
+    fsave   = 1
+    sid     = folder+"figures\\fig"+file_id+"_box"+str(c_box)+"_seuil"+str(seuil)[2:]
 
     y_integre, ip = IntegrateData_FindPeaks(y, c_box, figsave=fsave, seuil_abs=seuil, figshow=fshow, saveID=sid)
     if ip.size==2:
