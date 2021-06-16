@@ -1,30 +1,34 @@
-# -*- coding: utf-8 -*-
 """
-Filtrage grâce à la tansformations de Fourier
+Filtrage grace à la tansformations de Fourier
 
 Sparks chamber collaboration
 Sascha Zakaib-Bernier
 """
-#%%%
+#%%
+
 import numpy as np
 from matplotlib import pyplot as plt
 import os
 from scipy.signal import find_peaks
 
 #%%
+
 def filtre_fourier(x,y,n,dt,seuil = 0.06, dp_min=3, figsave = True, figshow = False, saveID = None):
-    #Première transformation de fourier
-    fhat = np.fft.fft (y, n)        #Tableau de transformée de data
-    PSD  = fhat*np.conj(fhat)/n     #Tableau du spectre de densité de puissance des différentes fréquences du signal
-    freq = (1/(dt*n))*np.arange(n)  #Tableau de vecteurs de fréquences du signal
-    #Deuxième transformation de fourier pour trouver la périodicité
-    PSD_norm = PSD-PSD.min()        #Procédures pour mettre à niveau les valeurs de l'axe des y du graphique, pour fhathat
-    PSD_norm /= PSD_norm.max()      #Lire en haut
-    fhathat  = np.fft.fft(PSD_norm[1:n//2],n//2-1)
+    ## Premiere transformation de fourier
+    fhat = np.fft.fft (y, n)        # Transformee de Fourier des donnees
+    PSD  = fhat*np.conj(fhat)/n     # Densite de puissance
+    freq = (1/(dt*n))*np.arange(n)  # Frequences du signal
+    
+    PSD_norm = PSD-PSD.min()        
+    PSD_norm /= PSD_norm.max()      # Normalisation des valeurs
+    
+    ## Transformee de Fourier de la premiere transformee
+    fhathat  = np.fft.fft(PSD_norm[1:n//2],n//2-1) 
     PSD_hat  = fhathat*np.conj(fhathat)/(n//2-1)
     
-    #Trouver les désintégrations
+    # Maximum locaux de la 2e transformee
     peaks,_ = find_peaks(PSD_hat, height=seuil)
+    
     '''
     ip = 0  
     while ip<peaks.size-1:
@@ -33,6 +37,7 @@ def filtre_fourier(x,y,n,dt,seuil = 0.06, dp_min=3, figsave = True, figshow = Fa
             peaks = np.delete(peaks,ip+1)
         else: ip += 1
      '''   
+    ## Figure
     if figsave or figshow:
         fig,ax = plt.subplots(3,1)
         ax[0].plot(x,y, ".k") 
@@ -52,16 +57,17 @@ def filtre_fourier(x,y,n,dt,seuil = 0.06, dp_min=3, figsave = True, figshow = Fa
         else: 
             plt.close()
         
-        return PSD_hat, peaks
+    return PSD_hat, peaks
         
         
 #%%
-#Lecture des acquisitions
+
+## Lecture des acquisitions
+    # Folder ne devrait contenir que les donnees et un dossier "figures"
 file_prefixe = "acq"
 file_ext     = ".txt"
 folder       = "C:\\Users\\sasch\\Desktop\\Stage été 2021\\codes\\Test filtre fourier\\"
 N_data       = len(os.listdir(folder))-1
-
 
 for i in range(N_data):
     file_id = str(i+18900)
@@ -71,16 +77,16 @@ for i in range(N_data):
     data = np.loadtxt(file_path)
 
     #Paramètres
-    x      = data[:,0]   #La première colonne des acquisitions représente le temps
-    y      = data[:,1]   #La deuxième colonne représente l'amplitude du signal
-    n      = len (x)     #Le nombre de points dans un acquisition (toujours 2500)
-    dt     = 2500/x[-1]  #Le nombre de points par seconde
-    seuil  = 0.065      #Le seuil pour le PSD_hat, pour trouver les désintégrations
-    dp_min = 20
-    fsave  = True        #Voulons-nous sauvegarder les figures?
-    fshow  = False       #Voulons-nous montrer les figures?
-    sid    = folder+"figures\\fig"+file_id+"_fourier_seuil"+str(seuil)[2:]+"_"     #Nom sous lequel seront enregistrées les figures où il y a désintégration
+    x      = data[:,0]   # Premiere colonne des acquisitions donne le temps
+    y      = data[:,1]   # Deuxieme colonne donne l'amplitude du signal
+    n      = len (x)     # Nombre de points dans un acquisition (toujours 2500)
+    dt     = 2500/x[-1]  # Nombre de points par seconde
+    seuil  = 0.065       # Seuil sur PSD_hat pour trouver les desintegrations
+    dp_min = 20          # Distance indicielle minimale entre deux sommet consecutif
+    fsave  = True        # Sauvegarder les figures 
+    fshow  = False       # Montrer les figures
+    sid    = folder+"figures\\fig"+file_id+"_fourier_seuil"+str(seuil)[2:]     # Path et nom des figures enregistrees
     
     
-    filtre_fourier(x, y, n, dt, seuil, dp_min, figsave = fsave, figshow = fshow, saveID = sid)  #Appel à la fonction
+    psd_hat,peaks =  filtre_fourier(x, y, n, dt, seuil, dp_min, figsave = fsave, figshow = fshow, saveID = sid)  #Appel à la fonction
     
