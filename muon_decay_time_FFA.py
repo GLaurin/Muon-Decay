@@ -1,14 +1,19 @@
-# -*- coding: utf-8 -*-
 """
 Muon decay time
 Sparks chamber collaboration
 """
 #%%
+
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.signal import find_peaks
-import os
 from scipy.optimize import curve_fit
+import os
+from time import time
+import modules as my
+from importlib import reload 
+reload(my) 
+
 #%%
 def MuonCount(t,N0,lambd):
     return N0*np.exp(-lambd*t)
@@ -44,7 +49,8 @@ def main(x, y, seuil, figshow = False, figsave = False, saveID = None):
             plt.close()
     
     return peaks
-#%%
+#%% Analyse des donnees
+
 file_prefixe = "acq"
 file_ext     = ".txt"
 folder       = "C:\\Users\\sasch\\Desktop\\Stage été 2021\\codes\\muon_decay_FFA-50-50\\"
@@ -74,10 +80,28 @@ for i in range(N_data):
     
     if ip.size==2:
         t_decay = np.append(t_decay,x[ip[1]]-x[ip[0]])
-N, bins = np.histogram(t_decay, bins='auto')
-t       = bins[:-1]+ 0.5*(bins[1:] - bins[:-1])
-plt.plot(t, N, 'or', alpha=1)
-plt.savefig(folder+"Decays\\Histogramme_désintégrations")
-plt.close()
 
-popt, pcov = curve_fit(MuonCount,N,t)
+#%% Temps de desintegration
+
+t_decay = np.loadtxt("t_decay_sample.txt")
+
+N, bins = np.histogram(t_decay, bins='auto')        # Histogramme des desintegrations
+t       = bins[:-1]+ 0.5*(bins[1:] - bins[:-1])     # Domaine discret des donnees
+t_lin   = np.linspace(t[0]*0.8, t[-1]*1.2)          # Domaine lineaire
+
+## Aujstements
+# Curve_fit
+popt, pcov = curve_fit(MuonCount, t, N, p0=[N.sum(),2.2e6], sigma=N**0.5)
+# OptimiseFunc
+uc,fmax = my.OptimiseFunc(MuonCount, t, N, N**0.5, 2, [N.sum()*10,5e6], cr_co=2, prt=0)
+
+## Figure
+plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label="Donnees")
+plt.plot(t_lin, MuonCount(t_lin,*uc),  'g', label="Algorithme")
+plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label="Curve_fit")
+plt.legend()
+
+#plt.savefig(folder+"Decays\\Histogramme_désintégrations")
+#plt.close()
+
+
