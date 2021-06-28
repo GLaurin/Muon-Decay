@@ -104,12 +104,12 @@ t_lin   = np.linspace(t[0]*0.8, t[-1]*1.2)          # Domaine lineaire
 ## Aujstements
 # Curve_fit
 popt, pcov = curve_fit(MuonCount, t, N, p0=[N.sum()*10,2.2e-6], sigma=N**0.5)
-print(f"Curve_fit: $\tau$ = {popt[1]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.2e}")
+print(f"Curve_fit: $\ttau$ = {popt[1]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.2e}")
 
 ## Figure
 plt.figure(figsize = (9,9))
 plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label="Données")
-plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label=f"Curve_fit: $\tau$ = {popt[1]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.2e}")
+plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label=f"Curve_fit: $\ttau$ = {popt[1]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.2e}")
 plt.legend()
 plt.savefig(args.folder+"\\Decays\\Histogramme_désintégrations")
 plt.close()
