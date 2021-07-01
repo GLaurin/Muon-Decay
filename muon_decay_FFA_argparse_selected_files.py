@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 """
 Muon decay time
 Sparks chamber collaboration
 """
+
 #%% imports
 
 import numpy as np
@@ -14,18 +16,17 @@ import argparse
 #%% Parsing
 
 parser  = argparse.ArgumentParser(description="Calculer le temps de vie du muon")
-parser.add_argument("--fshow",                  type = int, choices = [0,1], default = 0,      help = "Voulez-vous voir les figures? Non = 0, oui = 1")
-parser.add_argument("-f_p","--file_prefixe",    type = str,                  default = "acq",  help = "Entrez les lettres qui précèdent le numéro de chaque acquisition (ex: acq)")
-parser.add_argument("-f_e","--file_ext",        type = str,                  default = ".txt", help = "Entrez le nom du type de fichier à analyser (ex: .txt, .png, ...)")
-parser.add_argument("-s", "--seuil",            type = float,                default = 0.03,   help = "Entrez le seuil pour filtrer les désintérations")
-parser.add_argument("--dp_min",                 type = int,                  default = 400,    help = "Entrez largeur indicielle minimale d'un pic pour filtrer les désintérations")
-parser.add_argument("--fsave",                  type = int,                  default = 1,      help = "Voulez-vous enregistrer les figures? Non = 0, oui = 1")
-parser.add_argument("-tdsave", "--save_times",  type = bool,                 default = 0,      help = "Enregistrement des temps de desintegration dans un fichier .txt? Non = 0, oui = 1")
-parser.add_argument("-tdID", "--times_file_ID", type = str,                  default = "",     help = "Nom du fichier des temps de desintegrations.")
+parser.add_argument("--fshow",                  type = bool,    default = 0,      help = "Voulez-vous voir les figures? Non = 0, oui = 1")
+parser.add_argument("-f_p","--file_prefixe",    type = str,     default = "acq",  help = "Entrez les lettres qui précèdent le numéro de chaque acquisition (ex: acq)")
+parser.add_argument("-f_e","--file_ext",        type = str,     default = ".txt", help = "Entrez le nom du type de fichier à analyser (ex: .txt, .png, ...)")
+parser.add_argument("-s", "--seuil",            type = float,   default = 0.03,   help = "Entrez le seuil pour filtrer les désintérations")
+parser.add_argument("--dp_min",                 type = int,     default = 400,    help = "Entrez largeur indicielle minimale d'un pic pour filtrer les désintérations")
+parser.add_argument("--fsave",                  type = int,     default = 1,      help = "Voulez-vous enregistrer les figures? Non = 0, oui = 1")
+parser.add_argument("-tdsave", "--save_times",  type = bool,    default = False,  help = "Enregistrement des temps de desintegration dans un fichier .txt? Non = 0, oui = 1")
+parser.add_argument("-tdID", "--times_file_ID", type = str,     default = "",     help = "Nom du fichier des temps de desintegrations.")
 #parser.add_argument()
-parser.add_argument("-f","--folder",            type = str,                                    help = "Entrez le chemin où se trouve les fichiers à analyser sur votre ordinateur")
+parser.add_argument("-f","--folder",            type = str,                       help = "Entrez le chemin où se trouve les fichiers à analyser sur votre ordinateur")
 parser.add_argument("-d","--date",              type = str,                       help = "Entrez la date de l'analyse avec des tirets (ex: 30-06)")
-
 args = parser.parse_args()
 
 print("Analyse en cours...")
@@ -120,16 +121,16 @@ def FindMuonDecay(x, y, seuil, dp_min, figshow = False, figsave = False, saveID 
 
 #%% Analyse des donnees
 
-N_data  = len(os.listdir(args.folder))  # Nombre de fichiers a lire
+N_data  = len(os.listdir(args.folder+"\\Decays"))  # Nombre de fichiers a lire
 t_decay = np.zeros(0)                   # Initialisation : temps de desintegration des evenements identifies
 
 for i in range(N_data):
     
     ## Construction du nom de fichier
-    file_id = str(i+1)
+    file_id = os.listdir(args.folder+"\\Decays")[i][6:12]
     if len(file_id)<6: 
         file_id = (6-len(file_id))*"0"+file_id
-        file_path = args.folder + "\\" + args.file_prefixe + file_id + args.file_ext
+    file_path = args.folder + "\\" + args.file_prefixe + file_id + args.file_ext
     
     ## Lecture du fichier
     try:
@@ -140,8 +141,8 @@ for i in range(N_data):
         print(file_id)
         
     ## Construction du nom de figure
-    sid     = args.folder+"\\Decays\\figure"+file_id+"_seuil"+str(args.seuil)[2:]+"_date"+str(args.date)
-    sid_biz = args.folder+"\\Decays\\Figures aberrantes\\figure"+file_id+"_seuil"+str(args.seuil)[2:]+"_date"+str(args.date)   #Dossier dans lequel les figures avec 3 pics ou plus seront enregistrées
+    sid     = args.folder+"\\Decays\\figure"+file_id+"_seuil"+str(args.seuil)[2:]+"_dpmin"+str(args.dp_min)+"_date"+str(args.date)
+    sid_biz = args.folder+"\\Decays\\Figures aberrantes\\figure"+file_id+"_seuil"+str(args.seuil)[2:]+"_dpmin"+str(args.dp_min)+"_date"+str(args.date)   #Dossier dans lequel les figures avec 3 pics ou plus seront enregistrées
     
     ## Identification des pics du fichier
     ip = FindMuonDecay(x, y, args.seuil, args.dp_min, figshow = args.fshow, figsave = args.fsave, saveID = sid, saveID_biz = sid_biz) #Appel à a fonction
@@ -152,9 +153,9 @@ for i in range(N_data):
         t_decay = np.append(t_decay,x[ip[1]]-x[ip[0]])
     elif i%50 == 0:
         print(f"{i}/{N_data}")
-        
+
 ## Enregistrement des temps si applicable
-if args.save_times:
+if args.save_times == True:
     np.savetxt(args.folder + args.times_file_ID + ".txt", t_decay)
 
 #%% Temps de desintegration
@@ -164,13 +165,12 @@ if args.save_times:
 #t_decay_2 = np.loadtxt("t_decay_2.txt")
 #t_decay_tot = np.append(t_decay_1,t_decay_2)
 
-
 N, bins = np.histogram(t_decay, bins='auto')        # Histogramme des desintegrations
 t       = bins[:-1]+ 0.5*(bins[1:] - bins[:-1])     # Domaine discret des donnees
 t_lin   = np.linspace(t[0]*0.8, t[-1]*1.2)          # Domaine lineaire
 
 ## Aujstements
-popt, pcov = curve_fit(MuonCount, t, N, p0=[N.sum()*10, 2.2e-6, 1], sigma=N**0.5)
+popt, pcov = curve_fit(MuonCount, t, N, p0=[N.sum()*10,2.2e-6, 1], sigma=N**0.5)
 N_fit = MuonCount(t, *popt)
 chi2 = sum((N_fit-N)**2/(np.sqrt(N)))
 chi2_norm = chi2/(N.size-3)
@@ -183,3 +183,4 @@ plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label="Curve_fit:\nDate: {args.date}
 plt.legend()
 plt.savefig(args.folder+"\\Decays\\Histogramme_désintégrations_seuil"+str(args.seuil)[2:]+"_dpmin"+str(args.dp_min)+"_date"+str(args.date))
 plt.close()
+
