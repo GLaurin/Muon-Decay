@@ -138,6 +138,7 @@ for i in range(N_data):
         y = data[:,1]   #La deuxième colonne représente l'amplitude du signal
     except:
         print(file_id)
+        continue
         
     ## Construction du nom de figure
     sid     = args.folder+"\\Decays\\figure"+file_id+"_seuil"+str(args.seuil)[2:]+"_date"+str(args.date)

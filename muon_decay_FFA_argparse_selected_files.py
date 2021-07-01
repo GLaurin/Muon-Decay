@@ -22,7 +22,7 @@ parser.add_argument("-f_e","--file_ext",        type = str,     default = ".txt"
 parser.add_argument("-s", "--seuil",            type = float,   default = 0.03,   help = "Entrez le seuil pour filtrer les désintérations")
 parser.add_argument("--dp_min",                 type = int,     default = 400,    help = "Entrez largeur indicielle minimale d'un pic pour filtrer les désintérations")
 parser.add_argument("--fsave",                  type = int,     default = 1,      help = "Voulez-vous enregistrer les figures? Non = 0, oui = 1")
-parser.add_argument("-tdsave", "--save_times",  type = bool,    default = False,  help = "Enregistrement des temps de desintegration dans un fichier .txt? Non = 0, oui = 1")
+parser.add_argument("-tdsave", "--save_times",  type = bool,    default = 0,  help = "Enregistrement des temps de desintegration dans un fichier .txt? Non = 0, oui = 1")
 parser.add_argument("-tdID", "--times_file_ID", type = str,     default = "",     help = "Nom du fichier des temps de desintegrations.")
 #parser.add_argument()
 parser.add_argument("-f","--folder",            type = str,                       help = "Entrez le chemin où se trouve les fichiers à analyser sur votre ordinateur")
@@ -139,6 +139,7 @@ for i in range(N_data):
         y = data[:,1]   #La deuxième colonne représente l'amplitude du signal
     except:
         print(file_id)
+        continue
         
     ## Construction du nom de figure
     sid     = args.folder+"\\Decays\\figure"+file_id+"_seuil"+str(args.seuil)[2:]+"_dpmin"+str(args.dp_min)+"_date"+str(args.date)
