@@ -14,25 +14,37 @@ import argparse
 #%% Parsing
 
 parser  = argparse.ArgumentParser(description="Calculer le temps de vie du muon")
-parser.add_argument("--fshow",                  type = int, choices = [0,1], default = 0,      help = "Voulez-vous voir les figures? Non = 0, oui = 1")
-parser.add_argument("-f_p","--file_prefixe",    type = str,                  default = "acq",  help = "Entrez les lettres qui précèdent le numéro de chaque acquisition (ex: acq)")
-parser.add_argument("-f_e","--file_ext",        type = str,                  default = ".txt", help = "Entrez le nom du type de fichier à analyser (ex: .txt, .png, ...)")
-parser.add_argument("-s", "--seuil",            type = float,                default = 0.03,   help = "Entrez le seuil pour filtrer les désintérations")
-parser.add_argument("--dp_min",                 type = int,                  default = 400,    help = "Entrez largeur indicielle minimale d'un pic pour filtrer les désintérations")
-parser.add_argument("--fsave",                  type = int,                  default = 1,      help = "Voulez-vous enregistrer les figures? Non = 0, oui = 1")
-parser.add_argument("-tdsave", "--save_times",  type = bool,                 default = 0,      help = "Enregistrement des temps de desintegration dans un fichier .txt? Non = 0, oui = 1")
-parser.add_argument("-tdID", "--times_file_ID", type = str,                  default = "",     help = "Nom du fichier des temps de desintegrations.")
-#parser.add_argument()
-parser.add_argument("-f","--folder",            type = str,                                    help = "Entrez le chemin où se trouve les fichiers à analyser sur votre ordinateur")
+parser.add_argument("--scint",                  type = int,     choices = [1,2],  help = "Les signaux à analyser proviennent du scintillateur 1 ou 2?")
+parser.add_argument("--fshow",                  type = bool,    default = 0,      help = "Voulez-vous voir les figures? Non = 0, oui = 1")
+parser.add_argument("-f_p","--file_prefixe",    type = str,     default = "acq",  help = "Entrez les lettres qui précèdent le numéro de chaque acquisition (ex: acq)")
+parser.add_argument("-f_e","--file_ext",        type = str,     default = ".txt", help = "Entrez le nom du type de fichier à analyser (ex: .txt, .png, ...)")
+parser.add_argument("-s", "--seuil",            type = float,   default = 0,      help = "Entrez le seuil pour filtrer les désintérations")
+parser.add_argument("--dp_min",                 type = int,     default = 0,      help = "Entrez largeur indicielle minimale d'un pic pour filtrer les désintérations")
+parser.add_argument("--fsave",                  type = int,     default = 1,      help = "Voulez-vous enregistrer les figures? Non = 0, oui = 1")
+parser.add_argument("-tdsave", "--save_times",  type = bool,    default = 0,      help = "Enregistrement des temps de desintegration dans un fichier .txt? Non = 0, oui = 1")
+parser.add_argument("-tdID", "--times_file_ID", type = str,     default = "",     help = "Nom du fichier des temps de desintegrations.")
+parser.add_argument("-f","--folder",            type = str,                       help = "Entrez le chemin où se trouve les fichiers à analyser sur votre ordinateur")
 parser.add_argument("-d","--date",              type = str,                       help = "Entrez la date de l'analyse avec des tirets (ex: 30-06)")
-
 args = parser.parse_args()
 
 print("Analyse en cours...")
+if args.scint == None:
+    print("L'analyse des données est faussée par l'absence de l'argument --scint. Recommencez, puis entrez le numéro du scintillateur en argument (--scint).")
+if args.scint == 1:
+    if args.seuil == 0:
+        args.seuil = 0.045
+    if args.dp_min == 0:
+        args.dp_min = 300
+elif args.scint == 2:
+    if args.seuil == 0:
+        args.seuil = 0.03
+    if args.dp_min == 0:
+        args.dp_min = 400
+
 
 #%% fonctions
 
-def MuonCount(t,N0,tau, k):
+def MuonCount(t,N0,tau):
     """
     Nombre de muons en fonction du temps; fonction decroissante exponentille.
 
@@ -50,7 +62,7 @@ def MuonCount(t,N0,tau, k):
     numpy.ndarray
 
     """
-    return N0*np.exp(-t/tau)+k
+    return N0*np.exp(-t/tau)
 
 def FindMuonDecay(x, y, seuil, dp_min, figshow = False, figsave = False, saveID = None, saveID_biz = None):
     """
@@ -104,13 +116,12 @@ def FindMuonDecay(x, y, seuil, dp_min, figshow = False, figsave = False, saveID 
             ax.axvline(peaks[i],c='k',ls=':',alpha=0.8)
         ax.legend(framealpha=1, loc=3)
         
-        if saveID == None or saveID_biz == None:
-            print("ATTENTION!!! Donner un saveID ou un saveID_biz")
-        else:
-            if peaks.size == 2 and figsave:
-                plt.savefig(saveID)
-            if peaks.size > 2  and figsave:     #Si une donnée a plus que deux pics, elle sera enregistrée ailleurs
-                plt.savefig(saveID_biz)
+        if peaks.size == 2 and figsave:
+            plt.savefig(saveID)
+        
+        if peaks.size > 2  and figsave:     #Si une donnée a plus que deux pics, elle sera enregistrée ailleurs
+            plt.savefig(saveID_biz)
+            
         if figshow:
             plt.show()
         else:
@@ -137,7 +148,7 @@ for i in range(N_data):
         x = data[:,0]   #La première colonne des acquisitions représente le temps
         y = data[:,1]   #La deuxième colonne représente l'amplitude du signal
     except:
-        print(file_id)
+        print(f"{file_id} Empty")
         continue
         
     ## Construction du nom de figure
@@ -151,7 +162,7 @@ for i in range(N_data):
     if ip.size==2:
         print(f"{i}/{N_data}")
         t_decay = np.append(t_decay,x[ip[1]]-x[ip[0]])
-    elif i%50 == 0:
+    elif i%100 == 0:
         print(f"{i}/{N_data}")
         
 ## Enregistrement des temps si applicable
@@ -170,17 +181,18 @@ N, bins = np.histogram(t_decay, bins='auto')        # Histogramme des desintegra
 t       = bins[:-1]+ 0.5*(bins[1:] - bins[:-1])     # Domaine discret des donnees
 t_lin   = np.linspace(t[0]*0.8, t[-1]*1.2)          # Domaine lineaire
 
-## Aujstements
-popt, pcov = curve_fit(MuonCount, t, N, p0=[N.sum()*10, 2.2e-6, 1], sigma=N**0.5)
-N_fit = MuonCount(t, *popt)
-chi2 = sum((N_fit-N)**2/(np.sqrt(N)))
-chi2_norm = chi2/(N.size-3)
-print("chi2_norm = "+ str(chi2_norm))
+## Ajustement de courbe et chi2
+popt, pcov  = curve_fit(MuonCount, t, N, p0=[N.sum()*10,2.2e-6], sigma=N**0.5)
+N_fit       = MuonCount(t, *popt)
+chi2        = sum((N_fit-N)**2/(np.sqrt(N)))
+chi2_norm   = chi2/(N.size-3)
+print(f"chi2_norm = {chi2_norm}")
 
-## Figure
+## Figure de l'histogramme
 plt.figure(figsize = (9,9))
-plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label="Données\nNombre de désintégrations = {t_decay.size}")
-plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label="Curve_fit:\nDate: {args.date}\n" + r"$\tau$" + f"= {popt[1]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.2e}\nN0 = {popt[0]}\nk = {popt[2]}\n"+r"$\chi^2$"+f"= {chi2_norm}")
+plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label=f"Curve_fit:\nDate: {args.date}\n" + r"$\tau$" + f"= {popt[1]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.2e}\nN0 = {popt[0]}\n"+r"$\chi^2$"+f"= {chi2_norm}")
+plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label=f"Données\nNuméro du scintillateur = {args.scint}\nNombre de désintégrations = {(t_decay[:,0]).size}")
 plt.legend()
+plt.title(f"Scintillateur numéro {args.scint} - seuil {args.seuil} - dp_min {args.dp_min}")
 plt.savefig(args.folder+"\\Decays\\Histogramme_désintégrations_seuil"+str(args.seuil)[2:]+"_dpmin"+str(args.dp_min)+"_date"+str(args.date))
 plt.close()
