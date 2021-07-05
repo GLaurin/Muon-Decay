@@ -16,7 +16,7 @@ import argparse
 #%% Parsing
 
 '''
-Les valeurs de seuil et de dp_min optimales lorsqu'on utilise le scintillateur 1 sont seuil = 0.045 et dp_min = 300. Pour le scintillateur 2, une recherche poussée du seuil et du dp_min n'a pas été effectuée.
+Les valeurs de seuil et de dp_min optimales lorsqu'on utilise le scintillateur 2 sont seuil = 0.045 et dp_min = 300. Pour le scintillateur 1, une recherche poussée du seuil et du dp_min n'a pas été effectuée.
 '''
 
 parser  = argparse.ArgumentParser(description="Calculer le temps de vie du muon")
@@ -36,16 +36,16 @@ args = parser.parse_args()
 print("Analyse en cours...")
 if args.scint == None:
     print("L'analyse des données est faussée par l'absence de l'argument --scint. Recommencez, puis entrez le numéro du scintillateur en argument (--scint).")
-if args.scint == 1:
+if args.scint == 2:
     if args.seuil == 0:
         args.seuil = 0.045
     if args.dp_min == 0:
         args.dp_min = 300
-elif args.scint == 2:
+elif args.scint == 1:
     if args.seuil == 0:
         args.seuil = 0.03
     if args.dp_min == 0:
-        args.dp_min = 400
+        args.dp_min = 500
 
 #%% fonctions
 
@@ -174,7 +174,7 @@ for i in range(N_data):
 
 ## Enregistrement des temps si applicable
 if args.save_times:
-    np.savetxt(args.folder + args.times_file_ID + ".txt", t_decay)
+    np.savetxt(args.folder +"\\"+ args.times_file_ID + ".txt", t_decay)
 
 #%% Temps de desintegration
 
@@ -190,13 +190,13 @@ t_lin   = np.linspace(t[0]*0.8, t[-1]*1.2)          # Domaine lineaire
 ## Ajustement de courbe et chi2
 popt, pcov  = curve_fit(MuonCount, t, N, p0=[N.sum()*10,2.2e-6], sigma=N**0.5)
 N_fit       = MuonCount(t, *popt)
-chi2        = sum((N_fit-N)**2/(np.sqrt(N)))
+chi2        = sum((N_fit-N)**2/(N))
 chi2_norm   = chi2/(N.size-3)
 print(f"chi2_norm = {chi2_norm}")
 
 ## Figure de l'histogramme
 plt.figure(figsize = (9,9))
-plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label=f"Curve_fit:\nDate: {args.date}\n" + r"$\tau$" + f"= {popt[1]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.2e}\nN0 = {popt[0]}\n"+r"$\chi^2$"+f"= {chi2_norm}")
+plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label=f"Curve_fit:\nDate: {args.date}\n" + r"$\tau$" + f"= {popt[1]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.2e}\nN0 = {popt[0]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.2e}\n"+r"$\chi^2_\nu$"+f"= {chi2_norm:.2e}")
 plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label=f"Données\nNuméro du scintillateur = {args.scint}\nNombre de désintégrations = {(t_decay[:,0]).size}")
 plt.legend()
 plt.title(f"Scintillateur numéro {args.scint} - seuil {args.seuil} - dp_min {args.dp_min}")
