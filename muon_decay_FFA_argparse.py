@@ -115,7 +115,12 @@ def FindMuonDecay(x, y, seuil, dp_min, figshow = False, figsave = False, saveID 
         ax.plot(y,'k.', label="Donnees brutes")
         ax.set_xlim(0,2500)
         ax.axhline(-seuil,c='r',label="Seuil")
+        
+        print('hello')
+        print(peaks)
+        
         ax.axvline(peaks[0]+dp_min)
+            
         for i in range(peaks.size):
             ax.axvline(peaks[i],c='k',ls=':',alpha=0.8)
         ax.legend(framealpha=1, loc=3)
@@ -136,7 +141,7 @@ def FindMuonDecay(x, y, seuil, dp_min, figshow = False, figsave = False, saveID 
 #%% Analyse des donnees
 
 N_data  = len(os.listdir(args.folder))  # Nombre de fichiers a lire
-t_decay = np.zeros(0)                   # Initialisation : temps de desintegration des evenements identifies
+t_decay = np.zeros((0,3))                   # Initialisation : temps de desintegration des evenements identifies
 
 for i in range(N_data):
     
@@ -165,13 +170,13 @@ for i in range(N_data):
     ## MaJ des temps de desintegration si applicable
     if ip.size==2:
         print(f"{i}/{N_data}")
-        t_decay = np.append(t_decay,x[ip[1]]-x[ip[0]])
+        t_decay = np.concatenate((t_decay, np.array([[ x[ip[1]] - x[ip[0]], int(file_id), y[ip[1]]]])))
     elif i%100 == 0:
         print(f"{i}/{N_data}")
         
 ## Enregistrement des temps si applicable
 if args.save_times:
-    np.savetxt(args.folder +"\\"+ args.times_file_ID + ".txt", t_decay)
+    np.savetxt(f"{args.folder}\\{args.times_file_ID}.txt", t_decay)
 
 #%% Temps de desintegration
 
@@ -194,8 +199,8 @@ print(f"chi2_norm = {chi2_norm}")
 
 ## Figure de l'histogramme
 plt.figure(figsize = (9,9))
-plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label=f"Curve_fit:\nDate: {args.date}\n" + r"$\tau$" + f"= {popt[1]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.2e}\nN0 = {popt[0]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.2e}\n"+r"$\chi^2_\nu$"+f"= {chi2_norm:.2e}")
-plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label=f"Données\nNuméro du scintillateur = {args.scint}\nNombre de désintégrations = {(t_decay[:,0]).size}")
+plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label=f"Curve_fit:\nDate: {args.date}\n" + r"$\tau$" + f"= {popt[1]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.2e}\nN0 = {popt[0]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.2e}\n"+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 3)}")
+plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label=f"Données\nNombre de désintégrations = {(t_decay[:,0]).size}")
 plt.legend()
 plt.title(f"Scintillateur numéro {args.scint} - seuil {args.seuil} - dp_min {args.dp_min}")
 plt.savefig(args.folder+"\\Decays\\Histogramme_désintégrations_seuil"+str(args.seuil)[2:]+"_dpmin"+str(args.dp_min)+"_date"+str(args.date))

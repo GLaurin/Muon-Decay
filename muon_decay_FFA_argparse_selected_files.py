@@ -16,7 +16,7 @@ import argparse
 #%% Parsing
 
 '''
-Les valeurs de seuil et de dp_min optimales lorsqu'on utilise le scintillateur 2 sont seuil = 0.045 et dp_min = 300. Pour le scintillateur 1, une recherche poussée du seuil et du dp_min n'a pas été effectuée.
+Les valeurs de seuil et de dp_min optimales lorsqu'on utilise le scintillateur 2 sont seuil = 0.045 et dp_min = 300. Pour le scintillateur 1, le seuil devrait être 0.03 et le dp_min 500.
 '''
 
 parser  = argparse.ArgumentParser(description="Calculer le temps de vie du muon")
@@ -174,7 +174,7 @@ for i in range(N_data):
 
 ## Enregistrement des temps si applicable
 if args.save_times:
-    np.savetxt(args.folder +"\\"+ args.times_file_ID + ".txt", t_decay)
+    np.savetxt(f"{args.folder}\\{args.times_file_ID}.txt", t_decay)
 
 #%% Temps de desintegration
 
@@ -196,8 +196,8 @@ print(f"chi2_norm = {chi2_norm}")
 
 ## Figure de l'histogramme
 plt.figure(figsize = (9,9))
-plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label=f"Curve_fit:\nDate: {args.date}\n" + r"$\tau$" + f"= {popt[1]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.2e}\nN0 = {popt[0]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.2e}\n"+r"$\chi^2_\nu$"+f"= {chi2_norm:.2e}")
-plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label=f"Données\nNuméro du scintillateur = {args.scint}\nNombre de désintégrations = {(t_decay[:,0]).size}")
+plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label=f"Curve_fit:\nDate: {args.date}\n" + r"$\tau$" + f"= {popt[1]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.2e}\nN0 = {popt[0]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.2e}\n"+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 3)}")
+plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label=f"Données\nNombre de désintégrations = {(t_decay[:,0]).size}")
 plt.legend()
 plt.title(f"Scintillateur numéro {args.scint} - seuil {args.seuil} - dp_min {args.dp_min}")
 plt.savefig(args.folder+"\\Decays\\Histogramme_désintégrations_seuil"+str(args.seuil)[2:]+"_dpmin"+str(args.dp_min)+"_date"+str(args.date))
