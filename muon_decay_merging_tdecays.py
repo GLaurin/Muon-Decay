@@ -51,14 +51,20 @@ def MuonCount(t,N0,tau):
 t_decay_1 = np.loadtxt(f"{args.folder}\\{args.file_ID_1}{args.file_ext}")
 t_decay_2 = np.loadtxt(f"{args.folder}\\{args.file_ID_2}{args.file_ext}")
 print("Analyse en cours...")
-t_decay   = np.concatenate((t_decay_1[:,0],t_decay_2[:,0]))
-for i in range (t_decay.size):
+if t_decay_1.shape > (len(t_decay_1), 1):
+    t_decay_1 = t_decay_1[:,0]
+if t_decay_2.shape > (len(t_decay_2), 1):
+    t_decay_2 = t_decay_2[:,0]
+
+t_decay   = np.concatenate((t_decay_1,t_decay_2))
+
+i=0
+while i < t_decay.size:
     if float(t_decay[i]) <= 1e-6:
-        try:
-            t_decay = np.delete(t_decay, i)
-        except:
-            print("L'acquisition {i} est problématique")
-            continue
+        t_decay = np.delete(t_decay, i)
+    else:
+        i+=1
+
 if args.save_times:
     np.savetxt(f"{args.folder}\\{args.file_ID_tot}.txt", t_decay)
 
@@ -78,6 +84,6 @@ plt.figure(figsize = (9,9))
 plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label=f"Curve_fit:\nDate: {args.date}\n" + r"$\tau$" + f"= {popt[1]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.2e}\nN0 = {popt[0]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.2e}\n"+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 3)}")
 plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label=f"Données\nNombre de désintégrations = {(t_decay).size}")
 plt.legend()
-plt.title(f"Merging of t_decay_1: {args.file_ID_1} and t_decay_2: {args.file_ID_2}")
+plt.title(f"Merging of {args.file_ID_1} and {args.file_ID_2}")
 plt.savefig(f"{args.folder}\\Histogramme_désintégrations_date{str(args.date)}_fichiers_{args.file_ID_tot}")
 plt.close()
