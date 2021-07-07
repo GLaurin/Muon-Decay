@@ -22,11 +22,11 @@ Il y a aussi quelques arguments optionnels qui peuvent êtres pertinents:
 - Si le nom des données fini autrement que part ".txt", précisez le dans l'argument **--file_ext** ou **-f_e**. 
 - Le programme décide, selon le scintillateur utilisé, le seuil vertical au-dessus duquel il cherche des pics, appelé seuil, ainsi que le seuil horizontal par-delà il enregistre des pics, appelé dp_min.  Si vous voulez choisir vous-mêmes ces valeurs, précisez les dans l'argument **--seuil** ou **-s** pour le seuil vertical et **--dp_min** pour le seuil vertical.
    - Les valeurs associées au scintillateur 1 sont:
-       - seuil = 0.03
-       - dp_min = 500
+       - seuil = 0.03;
+       - dp_min = 500.
    - Les valeurs associées au scintillateur 2 sont:
-       - seuil = 0.045
-       - dp_min = 300
+       - seuil = 0.045;
+       - dp_min = 300.
    - Il est important de remarquer que l'unité de mesure du seuil est en mV, tandis que le dp_min est exprimée en nombre de canaux, c'est-à-dire den nombre de points individuels de l'acquisition.
 - Par ailleurs, le code ferme automatiquement et enregistre automatiquement les figures des désintégrations. Si vous voulez voir les figures, l'argument -**-fshow** devrait être suivi de 1 et si vous ne voulez pas enregistrer les figures, l'argument **--fsave** devrait être suivi d'un 0.
 
