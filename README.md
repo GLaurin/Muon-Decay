@@ -41,7 +41,8 @@ La fusion de fichiers requiert certains arguments:
     - Si vous ne voulez pas enregistrer les temps de désintégration, écrivez rien pour l'argument **-tdID_merge** ou **-tdID_m** et écrivez 0 pour l'argument **--save_times** ou **-tdsave**.
 - Les noms des fichiers à fusionner doivent être écrit sans guillemets et avec un espace les séparant dans l'argument **--t_decays** ou **-tds**. Vous pouvez ajouter autant de fichiers que vous voulez. 
    - Si vous voulez fusionner un fichier qui sera analysé par la section analyse avec d'autres fichiers de temps de désintégration, n'ajoutez *pas le nom du fichier des temps de désintégration qui sera créé dans cet argument*. Écrivez le simplement dans l'argument **--tdID_analyse** ou **-tdID_a**.
+   - Il est important d'écrire le nom complet du fichier, avec la terminaison ".txt" ou toute autre terminaison.
 
 Voici un exemple de ce à quoi votre ligne dans votre ligne de commande devrait ressembler (l'ordre des arguments n'a pas d'importance):
 
-**>python muon_decay_FFA_argparse_merged.py -d "07-07" -fm "C:\Users\p123456\Desktop\Donées muons\t_decays" -tdID_m "t_decay_07-07" -tds t_decay_05-07-a t_decay_06-07**
+**>python muon_decay_FFA_argparse_merged.py -d "07-07" -fm "C:\Users\p123456\Desktop\Donées muons\t_decays" -tdID_m "t_decay_07-07" -tds t_decay_05-07-a.txt t_decay_06-07.txt**
