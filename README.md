@@ -28,7 +28,7 @@ Il y a aussi quelques arguments optionnels qui peuvent êtres pertinents:
        - seuil = 0.045;
        - dp_min = 300.
    - Il est important de remarquer que l'unité de mesure du seuil est en mV, tandis que le dp_min est exprimée en nombre de canaux, c'est-à-dire den nombre de points individuels de l'acquisition.
-- Par ailleurs, le code ferme automatiquement et enregistre automatiquement les figures des désintégrations. Si vous voulez voir les figures, l'argument -**-fshow** devrait être suivi de 1 et si vous ne voulez pas enregistrer les figures, l'argument **--fsave** devrait être suivi d'un 0.
+- Le code enregistre et ferme automatiquement les figures des désintégrations. Si vous voulez voir les figures, l'argument -**-fshow** devrait être suivi de 1 et si vous ne voulez pas enregistrer les figures, l'argument **--fsave** devrait être suivi d'un 0.
 
 ## Fusion:
 
@@ -41,7 +41,8 @@ La fusion de fichiers requiert certains arguments:
     - Si vous ne voulez pas enregistrer les temps de désintégration, écrivez rien pour l'argument **-tdID_merge** ou **-tdID_m** et écrivez 0 pour l'argument **--save_times** ou **-tdsave**.
 - Les noms des fichiers à fusionner doivent être écrit sans guillemets et avec un espace les séparant dans l'argument **--t_decays** ou **-tds**. Vous pouvez ajouter autant de fichiers que vous voulez. 
    - Si vous voulez fusionner un fichier qui sera analysé par la section analyse avec d'autres fichiers de temps de désintégration, n'ajoutez *pas le nom du fichier des temps de désintégration qui sera créé dans cet argument*. Écrivez le simplement dans l'argument **--tdID_analyse** ou **-tdID_a**.
+   - Il est important d'écrire le nom complet du fichier, avec la terminaison ".txt" ou toute autre terminaison.
 
 Voici un exemple de ce à quoi votre ligne dans votre ligne de commande devrait ressembler (l'ordre des arguments n'a pas d'importance):
 
-**>python muon_decay_FFA_argparse_merged.py -d "07-07" -fm "C:\Users\p123456\Desktop\Donées muons\t_decays" -tdID_m "t_decay_07-07" -tds t_decay_05-07-a t_decay_06-07**
+**>python muon_decay_FFA_argparse_merged.py -d "07-07" -fm "C:\Users\p123456\Desktop\Donées muons\t_decays" -tdID_m "t_decay_07-07" -tds t_decay_05-07-a.txt t_decay_06-07.txt**
