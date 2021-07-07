@@ -14,7 +14,7 @@ L'analyse nécessite plusieurs arguments essentiels:
 
 Voici un exemple de ce à quoi votre ligne dans votre ligne de commande devrait ressembler (l'ordre des arguments n'a pas d'importance):
 
-**python muon_decay_FFA_argparse_merged.py -d "07-07" -fa "C:\Users\p123456\Desktop\Donées muons\muon_decay_07-07" --scint 1 -tdID_a "t_decay_07-07"**
+**>python muon_decay_FFA_argparse_merged.py -d "07-07" -fa "C:\Users\p123456\Desktop\Donées muons\muon_decay_07-07" --scint 1 -tdID_a "t_decay_07-07"**
 
 Il y a aussi quelques arguments optionnels qui peuvent êtres pertinents: 
 - Si vous voulez analyser des données préselectionnées, il faut écrire 1 pour l'argument **--selected_files** ou **-sel_f**. 
@@ -44,4 +44,4 @@ La fusion de fichiers requiert certains arguments:
 
 Voici un exemple de ce à quoi votre ligne dans votre ligne de commande devrait ressembler (l'ordre des arguments n'a pas d'importance):
 
-**python muon_decay_FFA_argparse_merged.py -d "07-07" -fm "C:\Users\p123456\Desktop\Donées muons\t_decays" -tdID_m "t_decay_07-07" -tds t_decay_05-07-a t_decay_06-07**
+**>python muon_decay_FFA_argparse_merged.py -d "07-07" -fm "C:\Users\p123456\Desktop\Donées muons\t_decays" -tdID_m "t_decay_07-07" -tds t_decay_05-07-a t_decay_06-07**
