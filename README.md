@@ -28,7 +28,7 @@ Il y a aussi quelques arguments optionnels qui peuvent êtres pertinents:
        - seuil = 0.045;
        - dp_min = 300.
    - Il est important de remarquer que l'unité de mesure du seuil est en mV, tandis que le dp_min est exprimée en nombre de canaux, c'est-à-dire den nombre de points individuels de l'acquisition.
-- Par ailleurs, le code ferme automatiquement et enregistre automatiquement les figures des désintégrations. Si vous voulez voir les figures, l'argument -**-fshow** devrait être suivi de 1 et si vous ne voulez pas enregistrer les figures, l'argument **--fsave** devrait être suivi d'un 0.
+- Le code enregistre et ferme automatiquement les figures des désintégrations. Si vous voulez voir les figures, l'argument -**-fshow** devrait être suivi de 1 et si vous ne voulez pas enregistrer les figures, l'argument **--fsave** devrait être suivi d'un 0.
 
 ## Fusion:
 
