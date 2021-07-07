@@ -30,7 +30,7 @@ parser.add_argument("-tdsave", "--save_times",  type = bool,    default = 1,    
 parser.add_argument("-tdID_a", "--tdID_analyse",type = str,     default = "",     help = "Nom du fichier des temps de desintegrations après l'analyse.")
 parser.add_argument("-tdID_f", "--tdID_fusion", type = str,     default = "",     help = "Nom du fichier des temps de desintegrations après la fusion.")
 parser.add_argument("-tds", "--t_decays",       type = str,     nargs = "+",      help = "Entrez les noms des fichiers que vous voulez fusionner un après les autres avec un espace entre chaque nom (ex: t_decay_05-07-a t_decay_29-06).")
-parser.add_argument("-fm", "--folder_merge",    type = str,     default = "",     help = "Entrez le chemin du dossier où se trouve les fichiers à fusionner sur votre ordinateur. si vous ne voulez pas fusionner de fichiers, n'entrez rien pour cet argument.")
+parser.add_argument("-fm", "--folder_merge",    type = str,     default = "",     help = "Entrez le chemin du dossier où se trouve les fichiers à fusionner sur votre ordinateur. Si vous ne voulez pas fusionner de fichiers, n'entrez rien pour cet argument.")
 parser.add_argument("-fa","--folder_analyse",   type = str,     default = "",     help = "Entrez le chemin du dossier où se trouve les fichiers à analyser sur votre ordinateur. Si vous ne voulez pas analyser de fichiers, n'entrez rien pour cet argument.")
 parser.add_argument("-d","--date",              type = str,                       help = "Entrez la date de l'analyse avec des tirets (ex: 30-06).")
 args = parser.parse_args()
@@ -105,15 +105,12 @@ def FindMuonDecay(x, y, seuil, dp_min, figshow = False, figsave = False, saveID 
         else: ip += 1
         
     ## Figures
-    if figsave or figshow:
+    if (figshow or figsave) and peaks.size > 1:
         
         fig,ax = plt.subplots(figsize=(10,8))
         ax.plot(y,'k.', label="Donnees brutes")
         ax.set_xlim(0,2500)
         ax.axhline(-seuil,c='r',label="Seuil")
-        
-        print('hello')
-        print(peaks)
         
         ax.axvline(peaks[0]+dp_min)
             
@@ -134,7 +131,8 @@ def FindMuonDecay(x, y, seuil, dp_min, figshow = False, figsave = False, saveID 
     
     return peaks
 
-def MakeHistogram (t_decay, t_decays, date, folder, seuil=0.03, dp_min=500, scint = None, tdID_analyse = "", tdID_fusion = "", fusion = None):
+def MakeHistogram (t_decay, t_decays, date, folder, seuil=0.03, dp_min=500, scint = None, tdID_analyse = "", tdID_fusion = ""):
+    
     N, bins = np.histogram(t_decay, bins='auto')        # Histogramme des desintegrations
     t       = bins[:-1]+ 0.5*(bins[1:] - bins[:-1])     # Domaine discret des donnees
     t_lin   = np.linspace(t[0]*0.8, t[-1]*1.2)          # Domaine lineaire
@@ -154,35 +152,39 @@ def MakeHistogram (t_decay, t_decays, date, folder, seuil=0.03, dp_min=500, scin
     if tdID_fusion != "":
         files = ""
         if tdID_analyse != "":
-            files = tdID_analyse+", "
+            files = tdID_analyse
         for i in range (t_decays.size) :
             files = files +f", {t_decays[i]}"
         plt.title(f"Merging of {files}")
-        plt.savefig(f"{args.folder}\\Histogramme_désintégrations_date{str(args.date)}_fichier_{tdID_fusion}")
+        plt.savefig(f"{args.folder}\\Histogramme_désintégrations_date{date}_fichier_{tdID_fusion}")
     else:
         plt.title(f"Scintillateur numéro {scint} - seuil {seuil} - dp_min {dp_min}")
         plt.savefig(f"{folder}\\Decays\\Histogramme_désintégrations_seuil{str(seuil)[2:]}_dpmin{str(dp_min)}_date{str(date)}")
     plt.close()
-    return chi2_norm
+    return 
 
 #%% Analyse des donnees
 
 if args.folder_analyse != "":
     print("Analyse des acquisitions en cours...")
     if args.scint == None:
-        print("L'analyse des données est faussée par l'absence de l'argument --scint. Recommencez, puis entrez le numéro du scintillateur en argument (--scint).")
-    if args.scint == 2:
+        print("Erreur: entrez un numéro de scintillateur (ex: --scint 1). ")
+    
+    elif args.scint == 2:
         if args.seuil == 0:
             args.seuil = 0.045
         if args.dp_min == 0:
             args.dp_min = 300
+    
     elif args.scint == 1:
         if args.seuil == 0:
             args.seuil = 0.03
         if args.dp_min == 0:
-            args.dp_min = 400
+            args.dp_min = 500
     
     N_data  = len(os.listdir(args.folder_analyse))  # Nombre de fichiers a lire
+    if args.selected_files:
+        N_data = len(os.listdir(args.folder_analyse+"\\Decays"))
     t_decay_1 = np.zeros((0,3))                   # Initialisation : temps de desintegration des evenements identifies
     
     for i in range(N_data):
@@ -193,6 +195,7 @@ if args.folder_analyse != "":
             file_id = str(i+1)
             if len(file_id)<6: 
                 file_id = (6-len(file_id))*"0"+file_id
+                
         file_path = f"{args.folder_analyse}\\{args.file_prefixe}{file_id}{args.file_ext}"
         
         ## Lecture du fichier
@@ -222,27 +225,29 @@ if args.folder_analyse != "":
     if args.save_times:
         np.savetxt(f"{args.folder_analyse}\\{args.tdID_analyse}.txt", t_decay_1)
     
-    chi2_norm = MakeHistogram(t_decay_1, args.date, args.folder_analyse, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_fusion) #Appel à la fonction
+    MakeHistogram(t_decay_1, args.date, args.folder_analyse, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_fusion) #Appel à la fonction
 
 #%% Merging t_decays
 
 if args.folder_merge != "":
     print("Fusion des fichiers des temps de désintégrations en cours...")
     t_decay     = np.zeros(0)
-    t_decays    = np.zeros((len(args.t_decays)))    #tableau des noms des fichiers t_decays
+    t_decays    = np.zeros((len(args.t_decays)), dtype=object)    #tableau des noms des fichiers t_decays
+    
     for i in args.t_decays.size:
         t_decays[i] = np.loadtxt(args.t_decays[i])
-        if t_decays[i].shape > (len(t_decays[i]), 1):
+        
+        if len(t_decays[i].shape) > 1:
             t_decays[i] = t_decays[i][:,0]
+            
         t_decay = np.concatenate((t_decay,t_decays[i]))
+        
     if args.folder_analyse != "":
         t_decay = np.concatenate((t_decay, t_decay_1[:,0]))
-    i=0
-    while i < t_decay.size:
-        if float(t_decay[i]) <= 1e-6:
-            t_decay = np.delete(t_decay, i)
-        else:
-            i+=1
+      
+    t_decay = np.delete(t_decay, t_decay<1e-6)
+    
     if args.save_times:
         np.savetxt(f"{args.folder}\\{args.tdID_fusion}.txt", t_decay)
-    chi2_norm = MakeHistogram(t_decay, args.t_decays, args.date, args.folder_merge, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_fusion)
+        
+    MakeHistogram(t_decay, args.t_decays, args.date, args.folder_merge, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_fusion)
