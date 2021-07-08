@@ -14,10 +14,11 @@ import argparse
 #%% Parsing
 
 '''
-Les valeurs de seuil et de dp_min optimales lorsqu'on utilise le scintillateur 2 sont seuil = 0.045 et dp_min = 300. Pour le scintillateur 1, une recherche poussée du seuil et du dp_min n'a pas été effectuée.
+Les valeurs de seuil et de dp_min optimales lorsqu'on utilise le scintillateur 2 sont seuil = 0.045 et dp_min = 300. Pour le scintillateur 1, le seuil devrait être 0.03 et le dp_min, 500.
 '''
 
 parser  = argparse.ArgumentParser(description="Calculer le temps de vie du muon")
+parser.add_argument("-ch", "--clean_h",         type = bool,    default = 0,      help = "Voulez-vous que l'histogramme soit propre/présentable?")
 parser.add_argument("--scint",                  type = int,     choices = [1,2],  help = "Les signaux à analyser proviennent du scintillateur 1 ou 2?")
 parser.add_argument("-sel_f","--selected_files",type = bool,    default = 0,      help = "Voulez-vous analyser des fichiers préselectionnés? Oui = 1, non = 0.")
 parser.add_argument("--fshow",                  type = bool,    default = 0,      help = "Voulez-vous voir les figures? Non = 0, oui = 1.")
@@ -28,25 +29,25 @@ parser.add_argument("--dp_min",                 type = int,     default = 0,    
 parser.add_argument("--fsave",                  type = int,     default = 1,      help = "Voulez-vous enregistrer les figures? Non = 0, oui = 1")
 parser.add_argument("-tdsave", "--save_times",  type = bool,    default = 1,      help = "Enregistrement des temps de desintegration dans un fichier .txt? Non = 0, oui = 1.")
 parser.add_argument("-tdID_a", "--tdID_analyse",type = str,     default = "",     help = "Nom du fichier des temps de desintegrations après l'analyse.")
-parser.add_argument("-tdID_f", "--tdID_fusion", type = str,     default = "",     help = "Nom du fichier des temps de desintegrations après la fusion.")
+parser.add_argument("-tdID_m", "--tdID_merge",  type = str,     default = "",     help = "Nom du fichier des temps de desintegrations après la fusion.")
 parser.add_argument("-tds", "--t_decays",       type = str,     nargs = "+",      help = "Entrez les noms des fichiers que vous voulez fusionner un après les autres avec un espace entre chaque nom (ex: t_decay_05-07-a t_decay_29-06).")
 parser.add_argument("-fm", "--folder_merge",    type = str,     default = "",     help = "Entrez le chemin du dossier où se trouve les fichiers à fusionner sur votre ordinateur. Si vous ne voulez pas fusionner de fichiers, n'entrez rien pour cet argument.")
-parser.add_argument("-fa","--folder_analyse",   type = str,     default = "",     help = "Entrez le chemin du dossier où se trouve les fichiers à analyser sur votre ordinateur. Si vous ne voulez pas analyser de fichiers, n'entrez rien pour cet argument.")
+parser.add_argument("-fa","--folder_analyse",   type = str,     default = "",     help = "Entrez le chemin du dossier où se trouve les données à analyser sur votre ordinateur. Si vous ne voulez pas analyser de fichiers, n'entrez rien pour cet argument.")
 parser.add_argument("-d","--date",              type = str,                       help = "Entrez la date de l'analyse avec des tirets (ex: 30-06).")
 args = parser.parse_args()
 
 '''
 Si on veut faire une analyse, il faut absolument préciser:
     -fa, -d, --scint, -sel_f (default 0), -tdID_a
-si on veut faire une fusion de fichiers, il faut absolument préciser:
-    -fm, -d, -tdID_f,-tds, à compléter quand j'aurai fini
+Si on veut faire une fusion de fichiers, il faut absolument préciser:
+    -fm, -d, -tdID_m,-tds,
 '''
 
 #%% fonctions
 
 def MuonCount(t,N0,tau):
     """
-    Nombre de muons en fonction du temps; fonction decroissante exponentille.
+    Nombre de muons en fonction du temps; fonction decroissante exponentielle.
 
     Parameters
     ----------
@@ -108,14 +109,14 @@ def FindMuonDecay(x, y, seuil, dp_min, figshow = False, figsave = False, saveID 
     if (figshow or figsave) and peaks.size > 1:
         
         fig,ax = plt.subplots(figsize=(10,8))
-        ax.plot(y,'k.', label="Donnees brutes")
+        ax.plot(y,'k.', label="Données brutes")
         ax.set_xlim(0,2500)
-        ax.axhline(-seuil,c='r',label="Seuil")
-        
-        ax.axvline(peaks[0]+dp_min)
+        ax.axhline(-seuil,c='r',label=f"seuil: {str(seuil)}")
+        ax.axvline(peaks[0]+dp_min, label=f"dp_min. {str(dp_min)}")
             
         for i in range(peaks.size):
             ax.axvline(peaks[i],c='k',ls=':',alpha=0.8)
+            
         ax.legend(framealpha=1, loc=3)
         
         if peaks.size == 2 and figsave:
@@ -131,7 +132,7 @@ def FindMuonDecay(x, y, seuil, dp_min, figshow = False, figsave = False, saveID 
     
     return peaks
 
-def MakeHistogram (t_decay, t_decays, date, folder, seuil=0.03, dp_min=500, scint = None, tdID_analyse = "", tdID_fusion = ""):
+def MakeHistogram (t_decay, t_decays, date, folder, seuil=0.03, dp_min=500, scint = None, tdID_analyse = "", tdID_merge = "", ch = 0):
     
     N, bins = np.histogram(t_decay, bins='auto')        # Histogramme des desintegrations
     t       = bins[:-1]+ 0.5*(bins[1:] - bins[:-1])     # Domaine discret des donnees
@@ -146,17 +147,22 @@ def MakeHistogram (t_decay, t_decays, date, folder, seuil=0.03, dp_min=500, scin
     
     ## Figure de l'histogramme
     plt.figure(figsize = (9,9))
-    plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label=f"Curve_fit:\nDate: {date}\n" + r"$\tau$" + f"= {popt[1]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.2e}\nN0 = {popt[0]:.3e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.2e}\n"+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 3)}")
-    plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label=f"Données\nNombre de désintégrations = {(t_decay[:,0]).size}")
+    plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label="Courbe:\n  " + r"$\tau$" + f"= {popt[1]:.1e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.0e}\n  N0 = {popt[0]:.1e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.0e}\n  "+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 1)}")
+    plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label=f"Données:\n  Nombre total de désintégrations = {(t_decay).size}\n  Date: {date}")
+    plt.xlabel("Temps (s)")
+    plt.ylabel("Nombre de désintégrations")
     plt.legend()
-    if tdID_fusion != "":
+    if ch:
+        plt.title("Histogramme du nombre de désintégrations des muons cosmiques en fonction du temps\npermettant de calculer le temps de vie du muon au repos")
+        plt.savefig(f"{folder}\\Histogramme_muons_désintégrations_date{date}")
+    elif tdID_merge != "":
         files = ""
         if tdID_analyse != "":
             files = tdID_analyse
-        for i in range (t_decays.size) :
+        for i in range (len(t_decays)) :
             files = files +f", {t_decays[i]}"
         plt.title(f"Merging of {files}")
-        plt.savefig(f"{args.folder}\\Histogramme_désintégrations_date{date}_fichier_{tdID_fusion}")
+        plt.savefig(f"{folder}\\Histogramme_désintégrations_date{date}_fichier_{tdID_merge}")
     else:
         plt.title(f"Scintillateur numéro {scint} - seuil {seuil} - dp_min {dp_min}")
         plt.savefig(f"{folder}\\Decays\\Histogramme_désintégrations_seuil{str(seuil)[2:]}_dpmin{str(dp_min)}_date{str(date)}")
@@ -225,7 +231,7 @@ if args.folder_analyse != "":
     if args.save_times:
         np.savetxt(f"{args.folder_analyse}\\{args.tdID_analyse}.txt", t_decay_1)
     
-    MakeHistogram(t_decay_1, args.date, args.folder_analyse, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_fusion) #Appel à la fonction
+    MakeHistogram(t_decay_1[:,0], None, args.date, args.folder_analyse, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_fusion, args.clean_h) #Appel à la fonction
 
 #%% Merging t_decays
 
@@ -234,8 +240,8 @@ if args.folder_merge != "":
     t_decay     = np.zeros(0)
     t_decays    = np.zeros((len(args.t_decays)), dtype=object)    #tableau des noms des fichiers t_decays
     
-    for i in args.t_decays.size:
-        t_decays[i] = np.loadtxt(args.t_decays[i])
+    for i in range(len(args.t_decays)):
+        t_decays[i] = np.loadtxt(f"{args.folder_merge}\\{args.t_decays[i]}")
         
         if len(t_decays[i].shape) > 1:
             t_decays[i] = t_decays[i][:,0]
@@ -248,6 +254,6 @@ if args.folder_merge != "":
     t_decay = np.delete(t_decay, t_decay<1e-6)
     
     if args.save_times:
-        np.savetxt(f"{args.folder}\\{args.tdID_fusion}.txt", t_decay)
+        np.savetxt(f"{args.folder_merge}\\{args.tdID_merge}.txt", t_decay)
         
-    MakeHistogram(t_decay, args.t_decays, args.date, args.folder_merge, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_fusion)
+    MakeHistogram(t_decay, args.t_decays, args.date, args.folder_merge, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_merge, args.clean_h)
