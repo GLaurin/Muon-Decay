@@ -1,4 +1,4 @@
-# Muon-Decay
+## Muon-Decay
 Le code le plus à jour est muon_decay_FFA_argparse_merged.py. Voici quelques instructions sur sont utilisation:
 
 Ce code permet l'analyse de données ainsi que la fusion de fichiers «t_decay» déjà analysés.
