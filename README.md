@@ -1,4 +1,4 @@
-# Muon-Decay
+# Muon Decay
 Le code le plus à jour est muon_decay_FFA_argparse_merged.py. Voici quelques instructions sur sont utilisation:
 
 Ce code permet l'analyse de données ainsi que la fusion de fichiers «t_decay» déjà analysés.
@@ -46,3 +46,7 @@ La fusion de fichiers requiert certains arguments:
 Voici un exemple de ce à quoi votre ligne dans votre ligne de commande devrait ressembler (l'ordre des arguments n'a pas d'importance):
 
 **>python muon_decay_FFA_argparse_merged.py -d "07-07" -fm "C:\Users\p123456\Desktop\Donées muons\t_decays" -tdID_m "t_decay_07-07" -tds t_decay_05-07-a.txt t_decay_06-07.txt**
+
+## Histogramme:
+
+Ce code permet la création d'histogrammes à partir desquels on calcule le temps de vie du muon au repos. Par défaut, le titre des histogrammes contient des paramètres commme le seuil et le dp_min s'il présente des données analysée. Sinon, il contient le nom des différents fichiers fusionnés. Par contre, il est possible de produire un histogramme avec un titre plus propre grâce à l'argument **--clean_h** ou **-ch**. Si c'est ce que vous recherchez, accordez une valeur de 1 à cet argument.
