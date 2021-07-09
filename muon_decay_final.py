@@ -264,11 +264,10 @@ if args.folder_merge != "":
 #%% Trouver la constante de couplage de Fermi
 
 #Valeurs
-MW  = 80.379 # Masse du boson et son incertitude, trouvés sur pdgLIVE en Gev
 h   = 6.58211915e-25  # Constante de planck sur 2pi en GeV s
 c   = 1   # Vitesse de la lumière
 mu  = 105.6583745e-3
 
 GF      = (pi/(mu**2*c**5))*(192*pi*h/(mu*tau))**0.5 #En fait, c'est le GF/(hc)**3
 i_GF    = i_tau*((pi/mu**2*c**5)*(192*pi*h/(mu))**0.5)*tau**-0.5/2
-print(f"La constante de couplage de Fermi expérimentale est {GF:.7e} ± {i_GF:.0e} GeV^-2")
+print(f"La constante de couplage de Fermi expérimentale est {GF:.7e} ± {i_GF:.0e} GeV^-2.")
