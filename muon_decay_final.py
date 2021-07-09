@@ -10,6 +10,7 @@ from scipy.signal import find_peaks
 from scipy.optimize import curve_fit
 import os
 import argparse
+from math import pi
 
 #%% Parsing
 
@@ -40,7 +41,7 @@ args = parser.parse_args()
 Si on veut faire une analyse, il faut absolument préciser:
     -fa, -d, --scint, -sel_f (default 0), -tdID_a
 Si on veut faire une fusion de fichiers, il faut absolument préciser:
-    -fm, -d, -tdID_m,-tds,
+    -fm, -d, -tdID_m,-tds
 '''
 
 #%% fonctions
@@ -140,6 +141,8 @@ def MakeHistogram (t_decay, t_decays, date, folder, seuil=0.03, dp_min=500, scin
     
     ## Ajustement de courbe et chi2
     popt, pcov  = curve_fit(MuonCount, t, N, p0=[N.sum()*10,2.2e-6], sigma=N**0.5)
+    tau         = popt[1]
+    i_tau       = np.sqrt(np.diag(pcov))[1] #d_tau pour delta tau
     N_fit       = MuonCount(t, *popt)
     chi2        = sum((N_fit-N)**2/(N))
     chi2_norm   = chi2/(N.size-3)
@@ -147,13 +150,13 @@ def MakeHistogram (t_decay, t_decays, date, folder, seuil=0.03, dp_min=500, scin
     
     ## Figure de l'histogramme
     plt.figure(figsize = (9,9))
-    plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label="Courbe:\n  " + r"$\tau$" + f"= {popt[1]:.1e} $\pm$ {np.sqrt(np.diag(pcov))[1]:.0e}\n  N0 = {popt[0]:.1e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.0e}\n  "+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 1)}")
+    plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label="Courbe:\n  " + r"$\tau$" + f"= {tau:.1e} $\pm$ {i_tau:.0e}\n  N0 = {popt[0]:.1e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.0e}\n  "+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 1)}")
     plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label=f"Données:\n  Nombre total de désintégrations = {(t_decay).size}\n  Date: {date}")
     plt.xlabel("Temps (s)")
     plt.ylabel("Nombre de désintégrations")
     plt.legend()
     if ch:
-        plt.title("Histogramme du nombre de désintégrations des muons cosmiques en fonction du temps\npermettant de calculer le temps de vie du muon au repos")
+        plt.title("Nombre de désintégrations des muons cosmiques en fonction du temps\npermettant de calculer le temps de vie du muon au repos")
         plt.savefig(f"{folder}\\Histogramme_muons_désintégrations_date{date}")
     elif tdID_merge != "":
         files = ""
@@ -167,7 +170,7 @@ def MakeHistogram (t_decay, t_decays, date, folder, seuil=0.03, dp_min=500, scin
         plt.title(f"Scintillateur numéro {scint} - seuil {seuil} - dp_min {dp_min}")
         plt.savefig(f"{folder}\\Decays\\Histogramme_désintégrations_seuil{str(seuil)[2:]}_dpmin{str(dp_min)}_date{str(date)}")
     plt.close()
-    return 
+    return tau, i_tau
 
 #%% Analyse des donnees
 
@@ -231,7 +234,7 @@ if args.folder_analyse != "":
     if args.save_times:
         np.savetxt(f"{args.folder_analyse}\\{args.tdID_analyse}.txt", t_decay_1)
     
-    MakeHistogram(t_decay_1[:,0], None, args.date, args.folder_analyse, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_fusion, args.clean_h) #Appel à la fonction
+    tau, i_tau = MakeHistogram(t_decay_1[:,0], None, args.date, args.folder_analyse, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_fusion, args.clean_h) #Appel à la fonction
 
 #%% Merging t_decays
 
@@ -256,4 +259,16 @@ if args.folder_merge != "":
     if args.save_times:
         np.savetxt(f"{args.folder_merge}\\{args.tdID_merge}.txt", t_decay)
         
-    MakeHistogram(t_decay, args.t_decays, args.date, args.folder_merge, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_merge, args.clean_h)
+    tau, i_tau = MakeHistogram(t_decay, args.t_decays, args.date, args.folder_merge, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_merge, args.clean_h)
+
+#%% Trouver la constante de couplage de Fermi
+
+#Valeurs
+MW, i_MW = 80.379, 0.012 # Masse du boson et son incertitude, trouvés sur pdgLIVE en Gev
+h, i_h = 6.58211915e-25, 0.00000056e-25   # Constante de planck sur 2pi en GeV s
+c = 1   # Vitesse de la lumière
+mu, i_mu = 105.6583745e-3, 0.0000024e-3
+
+GF = (pi/(mu**2*c**5))*(192*pi*h/(mu*tau))**0.5 #En fait, c'est le GF/(hc)**3
+i_GF = i_tau*((pi/mu**2*c**5)*(192*pi*h/(mu))**0.5)*tau**-0.5/2
+print(f"La constante de couplage de Fermi expérimentale est {GF:.7e} ± {i_GF:.0e} GeV^-2")
