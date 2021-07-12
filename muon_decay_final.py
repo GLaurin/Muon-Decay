@@ -234,7 +234,7 @@ if args.folder_analyse != "":
     if args.save_times:
         np.savetxt(f"{args.folder_analyse}\\{args.tdID_analyse}.txt", t_decay_1)
     
-    tau, i_tau = MakeHistogram(t_decay_1[:,0], None, args.date, args.folder_analyse, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_fusion, args.clean_h) #Appel à la fonction
+    tau, i_tau = MakeHistogram(t_decay_1[:,0], None, args.date, args.folder_analyse, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_merge, args.clean_h) #Appel à la fonction
 
 #%% Merging t_decays
 
@@ -269,5 +269,5 @@ c   = 1   # Vitesse de la lumière
 mu  = 105.6583745e-3
 
 GF      = (pi/(mu**2*c**5))*(192*pi*h/(mu*tau))**0.5 #En fait, c'est le GF/(hc)**3
-i_GF    = i_tau*((pi/mu**2*c**5)*(192*pi*h/(mu))**0.5)*tau**-0.5/2
-print(f"La constante de couplage de Fermi expérimentale est {GF:.7e} ± {i_GF:.0e} GeV^-2.")
+i_GF    = i_tau*((pi/mu**2*c**5)*(192*pi*h/(mu))**0.5)*tau**-1.5/2
+print(f"La constante de couplage de Fermi expérimentale est {GF:.2e} ± {i_GF:.0e} GeV^-2.")
