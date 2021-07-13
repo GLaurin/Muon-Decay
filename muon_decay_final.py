@@ -150,7 +150,7 @@ def MakeHistogram (t_decay, t_decays, date, folder, seuil=0.03, dp_min=500, scin
     
     ## Figure de l'histogramme
     plt.figure(figsize = (9,9))
-    plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label="Courbe:\n  " + r"$\tau$" + f"= {tau:.1e} $\pm$ {i_tau:.0e}\n  N0 = {popt[0]:.1e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.0e}\n  "+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 1)}")
+    plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label="Courbe:\n  " + r"$\tau$" + f"= {tau:.2e} $\pm$ {i_tau:.1e}\n  N0 = {popt[0]:.1e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.0e}\n  "+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 1)}")
     plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label=f"Données:\n  Nombre total de désintégrations = {(t_decay).size}\n  Date: {date}")
     plt.xlabel("Temps (s)")
     plt.ylabel("Nombre de désintégrations")
@@ -270,4 +270,4 @@ mu  = 105.6583745e-3
 
 GF      = (pi/(mu**2*c**5))*(192*pi*h/(mu*tau))**0.5 #En fait, c'est le GF/(hc)**3
 i_GF    = i_tau*((pi/mu**2*c**5)*(192*pi*h/(mu))**0.5)*tau**-1.5/2
-print(f"La constante de couplage de Fermi expérimentale est {GF:.2e} ± {i_GF:.0e} GeV^-2.")
+print(f"La constante de couplage de Fermi expérimentale est {GF:.3e} ± {i_GF:.1e} GeV^-2.")
