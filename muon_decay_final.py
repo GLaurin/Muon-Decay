@@ -149,7 +149,9 @@ def MakeHistogram (t_decay, t_decays, date, folder, seuil=0.03, dp_min=500, scin
     print(f"chi2_norm = {chi2_norm}")
     
     ## Figure de l'histogramme
-    plt.figure(figsize = (9,9))
+    BIGGER_SIZE = 12
+    plt.rc('font', size=BIGGER_SIZE)          # controls default text sizes
+    plt.figure(figsize = (10,10))
     plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label="Courbe:\n  " + r"$\tau$" + f"= {tau:.2e} $\pm$ {i_tau:.1e}\n  N0 = {popt[0]:.1e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.0e}\n  "+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 1)}")
     plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label=f"Données:\n  Nombre total de désintégrations = {(t_decay).size}\n  Date: {date}")
     plt.xlabel("Temps (s)")
@@ -215,7 +217,13 @@ if args.folder_analyse != "":
         except:
             print(f"{file_id} Empty")
             continue
-            
+        
+        #Recentrer les données
+        bruit = y[:200].mean()
+        if abs(bruit)>0.5:
+            for j in range (len(x)):
+                y[j] = y[j]-bruit
+        
         ## Construction du nom de figure
         sid     = f"{args.folder_analyse}\\Decays\\figure{file_id}_seuil{str(args.seuil)[2:]}_date{str(args.date)}"
         sid_biz = f"{args.folder_analyse}\\Decays\\Figures aberrantes\\figure{file_id}_seuil{str(args.seuil)[2:]}_date{str(args.date)}"   #Dossier dans lequel les figures avec 3 pics ou plus seront enregistrées
@@ -253,7 +261,7 @@ if args.folder_merge != "":
         
     if args.folder_analyse != "":
         t_decay = np.concatenate((t_decay, t_decay_1[:,0]))
-      
+     
     t_decay = np.delete(t_decay, t_decay<1e-6)
     
     if args.save_times:
