@@ -221,8 +221,7 @@ if args.folder_analyse != "":
         #Recentrer les données
         bruit = y[:200].mean()
         if abs(bruit)>0.5:
-            for j in range (len(x)):
-                y[j] = y[j]-bruit
+            y = y -bruit
         
         ## Construction du nom de figure
         sid     = f"{args.folder_analyse}\\Decays\\figure{file_id}_seuil{str(args.seuil)[2:]}_date{str(args.date)}"
