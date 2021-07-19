@@ -152,7 +152,7 @@ def MakeHistogram (t_decay, t_decays, date, folder, seuil=0.03, dp_min=500, scin
     BIGGER_SIZE = 12
     plt.rc('font', size=BIGGER_SIZE)          # controls default text sizes
     plt.figure(figsize = (10,10))
-    plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label="Courbe:\n  " + r"$\tau$" + f"= {tau:.2e} $\pm$ {i_tau:.1e}\n  N0 = {popt[0]:.1e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.0e}\n  "+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 1)}")
+    plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label="Courbe:\n  " + r"$\tau$" + f"= {tau:.2e} $\pm$ {i_tau:.1e}\n  "+r"N_0"+" = {popt[0]:.1e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.0e}\n  "+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 1)}")
     plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label=f"Données:\n  Nombre total de désintégrations = {(t_decay).size}\n  Date: {date}")
     plt.xlabel("Temps (s)")
     plt.ylabel("Nombre de désintégrations")
@@ -175,7 +175,6 @@ def MakeHistogram (t_decay, t_decays, date, folder, seuil=0.03, dp_min=500, scin
     return tau, i_tau
 
 #%% Analyse des donnees
-
 if args.folder_analyse != "":
     print("Analyse des acquisitions en cours...")
     if args.scint == None:
@@ -220,8 +219,7 @@ if args.folder_analyse != "":
         
         #Recentrer les données
         bruit = y[:200].mean()
-        if abs(bruit)>0.5:
-            y = y -bruit
+        y = y - bruit
         
         ## Construction du nom de figure
         sid     = f"{args.folder_analyse}\\Decays\\figure{file_id}_seuil{str(args.seuil)[2:]}_date{str(args.date)}"
@@ -236,7 +234,7 @@ if args.folder_analyse != "":
             t_decay_1 = np.concatenate((t_decay_1, np.array([[ x[ip[1]] - x[ip[0]], int(file_id), y[ip[1]]]])))
         elif i%100 == 0:
             print(f"{i}/{N_data}")
-            
+    
     ## Enregistrement des temps si applicable
     if args.save_times:
         np.savetxt(f"{args.folder_analyse}\\{args.tdID_analyse}.txt", t_decay_1)
@@ -278,3 +276,4 @@ mu  = 105.6583745e-3
 GF      = (pi/(mu**2*c**5))*(192*pi*h/(mu*tau))**0.5 #En fait, c'est le GF/(hc)**3
 i_GF    = i_tau*((pi/mu**2*c**5)*(192*pi*h/(mu))**0.5)*tau**-1.5/2
 print(f"La constante de couplage de Fermi expérimentale est {GF:.3e} ± {i_GF:.1e} GeV^-2.")
+
