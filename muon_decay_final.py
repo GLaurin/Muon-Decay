@@ -112,8 +112,8 @@ def FindMuonDecay(x, y, seuil, dp_min, figshow = False, figsave = False, saveID 
         fig,ax = plt.subplots(figsize=(10,8))
         ax.plot(y,'k.', label="Données brutes")
         ax.set_xlim(0,2500)
-        ax.axhline(-seuil,c='r',label=f"seuil: {str(seuil)}")
-        ax.axvline(peaks[0]+dp_min, label=f"dp_min. {str(dp_min)}")
+        ax.axhline(-seuil,c='r',label=f"Seuil: {str(seuil)} V")
+        ax.axvline(peaks[0]+dp_min, label=f"Distance minimale: {str(dp_min)} canaux")
             
         for i in range(peaks.size):
             ax.axvline(peaks[i],c='k',ls=':',alpha=0.8)
@@ -152,7 +152,7 @@ def MakeHistogram (t_decay, t_decays, date, folder, seuil=0.03, dp_min=500, scin
     BIGGER_SIZE = 12
     plt.rc('font', size=BIGGER_SIZE)          # controls default text sizes
     plt.figure(figsize = (10,10))
-    plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label="Courbe:\n  " + r"$\tau$" + f"= {tau:.2e} $\pm$ {i_tau:.1e}\n  "+r"N_0"+" = {popt[0]:.1e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.0e}\n  "+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 1)}")
+    plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label="Courbe:\n  " + r"$\tau$" + f"= {tau:.2e} $\pm$ {i_tau:.1e}\n  "+r"N_0"+f" = {popt[0]:.1e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.0e}\n  "+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 1)}")
     plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label=f"Données:\n  Nombre total de désintégrations = {(t_decay).size}\n  Date: {date}")
     plt.xlabel("Temps (s)")
     plt.ylabel("Nombre de désintégrations")
