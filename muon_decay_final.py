@@ -202,7 +202,7 @@ if args.folder_analyse != "":
         if args.selected_files:
             file_id = os.listdir(args.folder_analyse+"\\Decays")[i][6:12]
         else:
-            file_id = str(i+131041)
+            file_id = str(i+1)
             if len(file_id)<6: 
                 file_id = (6-len(file_id))*"0"+file_id
                 
