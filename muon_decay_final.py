@@ -31,7 +31,7 @@ parser.add_argument("--fsave",                  type = int,     default = 1,    
 parser.add_argument("-tdsave", "--save_times",  type = bool,    default = 1,      help = "Enregistrement des temps de desintegration dans un fichier .txt? Non = 0, oui = 1.")
 parser.add_argument("-tdID_a", "--tdID_analyse",type = str,     default = "",     help = "Nom du fichier des temps de desintegrations après l'analyse.")
 parser.add_argument("-tdID_m", "--tdID_merge",  type = str,     default = "",     help = "Nom du fichier des temps de desintegrations après la fusion.")
-parser.add_argument("-tds", "--t_decays",       type = str,     nargs = "+",      help = "Entrez les noms des fichiers que vous voulez fusionner un après les autres avec un espace entre chaque nom (ex: t_decay_05-07-a t_decay_29-06).")
+parser.add_argument("-tds", "--t_decays",       type = str,     nargs = "+",      help = "Entrez les noms des fichiers que vous voulez fusionner un après les autres avec un espace entre chaque nom (ex: t_decay_05-07-a.txt t_decay_29-06.txt).")
 parser.add_argument("-fm", "--folder_merge",    type = str,     default = "",     help = "Entrez le chemin du dossier où se trouve les fichiers à fusionner sur votre ordinateur. Si vous ne voulez pas fusionner de fichiers, n'entrez rien pour cet argument.")
 parser.add_argument("-fa","--folder_analyse",   type = str,     default = "",     help = "Entrez le chemin du dossier où se trouve les données à analyser sur votre ordinateur. Si vous ne voulez pas analyser de fichiers, n'entrez rien pour cet argument.")
 parser.add_argument("-d","--date",              type = str,                       help = "Entrez la date de l'analyse avec des tirets (ex: 30-06).")
@@ -40,6 +40,7 @@ args = parser.parse_args()
 '''
 Si on veut faire une analyse, il faut absolument préciser:
     -fa, -d, --scint, -sel_f (default 0), -tdID_a
+    Il faut également, dans le dossier fa, créer un dossier nommé Decays. Dans ce dossier, il faut également avoir un dossier nommé Figures aberrantes.
 Si on veut faire une fusion de fichiers, il faut absolument préciser:
     -fm, -d, -tdID_m,-tds
 '''
@@ -149,10 +150,9 @@ def MakeHistogram (t_decay, t_decays, date, folder, seuil=0.03, dp_min=500, scin
     print(f"chi2_norm = {chi2_norm}")
     
     ## Figure de l'histogramme
-    BIGGER_SIZE = 12
-    plt.rc('font', size=BIGGER_SIZE)          # controls default text sizes
+    plt.rc('font', size=12)          # controls default text sizes
     plt.figure(figsize = (10,10))
-    plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label="Courbe:\n  " + r"$\tau$" + f"= {tau:.2e} $\pm$ {i_tau:.1e}\n  "+r"N_0"+f" = {popt[0]:.1e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.0e}\n  "+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 1)}")
+    plt.plot(t_lin, MuonCount(t_lin,*popt),'k', label="Courbe:\n  " + r"$\tau$" + f"= {tau:.2e} $\pm$ {i_tau:.1e}\n  "+r"$N_0$"+f" = {popt[0]:.1e} $\pm$ {np.sqrt(np.diag(pcov))[0]:.0e}\n  "+r"$\chi^2_\nu$"+f"= {round(chi2_norm, 1)}")
     plt.errorbar(t, N, yerr=N**0.5, marker='o', color='r', ls='', capsize=3, label=f"Données:\n  Nombre total de désintégrations = {(t_decay).size}\n  Date: {date}")
     plt.xlabel("Temps (s)")
     plt.ylabel("Nombre de désintégrations")
@@ -202,7 +202,7 @@ if args.folder_analyse != "":
         if args.selected_files:
             file_id = os.listdir(args.folder_analyse+"\\Decays")[i][6:12]
         else:
-            file_id = str(i+1)
+            file_id = str(i+131041)
             if len(file_id)<6: 
                 file_id = (6-len(file_id))*"0"+file_id
                 
@@ -276,4 +276,3 @@ mu  = 105.6583745e-3
 GF      = (pi/(mu**2*c**5))*(192*pi*h/(mu*tau))**0.5 #En fait, c'est le GF/(hc)**3
 i_GF    = i_tau*((pi/mu**2*c**5)*(192*pi*h/(mu))**0.5)*tau**-1.5/2
 print(f"La constante de couplage de Fermi expérimentale est {GF:.3e} ± {i_GF:.1e} GeV^-2.")
-
