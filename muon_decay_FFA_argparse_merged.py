@@ -231,7 +231,7 @@ if args.folder_analyse != "":
     if args.save_times:
         np.savetxt(f"{args.folder_analyse}\\{args.tdID_analyse}.txt", t_decay_1)
     
-    MakeHistogram(t_decay_1[:,0], None, args.date, args.folder_analyse, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_fusion, args.clean_h) #Appel à la fonction
+    MakeHistogram(t_decay_1[:,0], None, args.date, args.folder_analyse, args.seuil, args.dp_min, args.scint, args.tdID_analyse, args.tdID_merge, args.clean_h) #Appel à la fonction
 
 #%% Merging t_decays
 
